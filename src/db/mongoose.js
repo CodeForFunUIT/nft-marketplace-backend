@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
 
-
 const connectDB = async () => {
   try {
-    await mongoose.connect(
-      process.env.MONGO_URI,
+    mongoose.connect(
+      // process.env.MONGO_URI,
+      'mongodb+srv://DoAn2:DoAn2@doan2.wjazbh5.mongodb.net/test',
       {
         useNewUrlParser: true,
         useUnifiedTopology: true,

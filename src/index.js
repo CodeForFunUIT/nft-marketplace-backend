@@ -39,6 +39,6 @@ app.use((req, res, next) => {
   });
   // 172.16.2.112
   const port = process.env.PORT
-  server.listen(port, () => {
-    console.log(`Server API listening at http://localhost:${port}`);
+  server.listen(3000, () => {
+    console.log(`Server API listening at http://localhost:3000`);
   });
