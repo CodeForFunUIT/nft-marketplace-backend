@@ -40,6 +40,10 @@ connectDB();
   app.get('/books',authToken, (req, res) => {
     res.json({status: 'Success', data: books})
   })
+
+  app.get('/',(req, res) => {
+    res.send('hello')
+  })
   
 
   const port = process.env.PORT || 5000
