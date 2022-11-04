@@ -1,0 +1,30 @@
+GET http://localhost:3000
+
+###
+Get http://localhost:3000/books
+Authorization: Beaer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InVzZXJuYW1lIjoibmdoaWEiLCJwYXNzV29yZCI6MTIzLCJpYXQiOjE2NjU5MDk3NjZ9LCJpYXQiOjE2NjU5MDk4MDgsImV4cCI6MTY2NTkwOTgzOH0.gL1KaLGLXwVBv6fD5AHuYg3VsQZ9KdxbW5aCX9MWd_M
+
+###
+POST http://localhost:3500/login
+Content-Type: application/json
+
+{
+    "username": "nghia",
+    "passWord": 123
+}
+
+###
+POST http://localhost:3500/refreshToken
+Content-Type: application/json
+
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5naGlhIiwicGFzc1dvcmQiOjEyMywiaWF0IjoxNjY1OTA5NzY2fQ.OVKIjFejcG0TmjeXkg6Fi3EhTUfL5nFiQbTjQMh7Z6I"
+}
+
+### 
+POST http://localhost:3500/logout
+Content-Type: application/json
+
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5naGlhIiwicGFzc1dvcmQiOjEyMywiaWF0IjoxNjY1OTA5NzY2fQ.OVKIjFejcG0TmjeXkg6Fi3EhTUfL5nFiQbTjQMh7Z6I"
+}
