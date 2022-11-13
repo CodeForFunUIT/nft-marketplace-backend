@@ -1,4 +1,5 @@
 import Jwt  from "jsonwebtoken";
+import HttpMethodStatus from "../utility/static.js";
 
 let refreshTokens = []
 
@@ -10,7 +11,7 @@ export const loginUser = async (req, res) => {
 
         const refreshToken = Jwt.sign(data,process.env.REFRESH_TOKEN_SECRET,)
         refreshTokens.push(refreshToken)
-        res.json({accessToken, refreshToken })
+        HttpMethodStatus.ok(res, 'Login success', {accessToken, refreshToken } )
       // Create a new user
     //   const newUser = new User({
     //   });
@@ -18,10 +19,7 @@ export const loginUser = async (req, res) => {
       ///Save User
     } catch (error) {
       console.log(error);
-      res.status(500).json({
-        success: false,
-        message: "Lỗi hệ thống.",
-      });
+      HttpMethodStatus.internalServerError(res, error.message)
     }
   };
 export const logOut = (req, res) => {

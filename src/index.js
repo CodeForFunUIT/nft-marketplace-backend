@@ -5,11 +5,17 @@ import dotenv from "dotenv";
 import authRouter from "./routers/auth_router.js"
 import Jwt  from "jsonwebtoken";
 import {authToken} from "./middleware/authorization.js";
+import cors from "cors";
 dotenv.config({path: './config/config.env'})
 const app = express();
 
 const server = http.createServer(app);
 app.use(express.json({ limit: "50mb", extended: true }));
+app.use(cors({
+  origin: 'https://nft-marketplace-backend-z4eu.vercel.app',
+  methods: ['GET','POST','DELETE','UPDATE','PUT','PATCH'],
+
+}));
 
 connectDB();
 
