@@ -11,8 +11,14 @@ const app = express();
 
 const server = http.createServer(app);
 app.use(express.json({ limit: "50mb", extended: true }));
-app.use(cors());
-app.options('*', cors());
+const allowedOrigins = ['http://localhost:3000'];
+
+const options = cors.CorsOption = {
+  origin: allowedOrigins
+};
+
+// Then pass these options to cors:
+app.use(cors(options));
 connectDB();
 
 
