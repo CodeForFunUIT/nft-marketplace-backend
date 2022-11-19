@@ -3,9 +3,12 @@ import http from "http";
 import connectDB from "./db/mongoose.js";
 import dotenv from "dotenv";
 import authRouter from "./routers/auth_router.js"
+import contractRouter from "./routers/contract_router.js"
+import userRouter from "./routers/user_router.js"
 import Jwt  from "jsonwebtoken";
 import {authToken} from "./middleware/authorization.js";
 import cors from "cors";
+import { ethers } from "ethers";
 dotenv.config({path: './config/config.env'})
 const app = express();
 
@@ -44,6 +47,8 @@ connectDB();
   //   });
   // });
   app.use("/auth",authRouter)
+  app.use("/contract", contractRouter)
+  app.use("/user", userRouter)
 
   app.get('/books',authToken, (req, res) => {
     res.json({status: 'Success', data: books})

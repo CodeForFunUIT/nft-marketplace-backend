@@ -3,10 +3,16 @@ import mongoose from "mongoose";
 const userSchema = new mongoose.Schema({
     walletAddress: {
         type: String,
+        required: true,
     },
     signature: {
-        String,
+        type: String,
+        required: true,
     },
+    nonce :{
+      type: Number,
+      required: true,
+    }
 
 })
 

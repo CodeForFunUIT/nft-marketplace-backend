@@ -1,4 +1,5 @@
 import express from "express";
+import { authToken } from "../middleware/authorization.js";
 const router = express.Router();
 
 import {
