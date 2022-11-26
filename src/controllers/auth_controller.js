@@ -8,27 +8,28 @@ let refreshTokens = []
 export const loginUser = async (req, res) => {
   try {
       const data = req.body
-      const accessToken = Jwt.sign(data,process.env.ACCESS_TOKEN_SECRET,{expiresIn: '30s'},)
+      const accessToken = Jwt.sign(data,process.env.ACCESS_TOKEN_SECRET,{expiresIn: '600s'},)
 
       const refreshToken = Jwt.sign(data,process.env.REFRESH_TOKEN_SECRET,)
       refreshTokens.push(refreshToken)
     // Create a new user
-
+    
     const isUserExist = await User.findOne({'walletAddress': data.walletAddress})
   
     if(isUserExist){
-      return HttpMethodStatus.ok(res, 'Login success', {data, accessToken, refreshToken})
+      return HttpMethodStatus.ok(res, 'Login success', {user: isUserExist, accessToken, refreshToken})
     }
 
-    const newUser = await new User({
-      address: data.walletAddress,
+    const newUser = new User({
+      walletAddress: data.walletAddress,
       signature: data.signature,
       nonce: data.nonce,
     });
 
     ///Save User
-    await newUser.save((error, data) => {
-      HttpMethodStatus.created(res, 'register success!', { data, accessToken, refreshToken });
+    
+    await newUser.save((error, user) => {
+      HttpMethodStatus.created(res, 'register success!', { user: user, accessToken, refreshToken });
     });
     
   } catch (error) {
@@ -55,5 +56,23 @@ export const refreshToken = (req, res) => {
     });
     res.json({accessToken})
   });
+}
+
+
+export const randomNounce = (req, res) => {
+  const len = 5
+  let randStr = ''
+  for (let i = 0; i < len; i++){
+    var ch = Math.floor((Math.random() * 10))
+    if(ch === 0){
+      ch++
+    }
+    randStr += ch
+  }
+
+  if(randStr.length !== 5){
+    return HttpMethodStatus.badRequest(res, 'something Wrong!!')
+  }
+  return HttpMethodStatus.ok(res, 'random nonce', randStr)
 }
 

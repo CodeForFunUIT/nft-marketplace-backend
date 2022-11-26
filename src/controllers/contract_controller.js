@@ -2,6 +2,7 @@ import Jwt  from "jsonwebtoken";
 import HttpMethodStatus from "../utility/static.js";
 import EventOrderAdd from "../models/event_order_add.js";
 import ethers from "ethers";
+import User from "../models/user.js";
 
 const INFURA_ID = '615672c98038474aa00db41473c787f8'
 const provider = new ethers.providers.JsonRpcProvider(`https://goerli.infura.io/v3/${INFURA_ID}`)
@@ -25,7 +26,6 @@ const contractNFT = new ethers.Contract(addressNFT, ERC20_ABI_NFT, provider)
 
 export const addOrder = async (req, res) => {
     try {
-    
         const eventMarketPlace = await contractMarketPlace.queryFilter('OrderAdded')
         const newIndex = eventMarketPlace.length - 1
 
@@ -45,7 +45,7 @@ export const addOrder = async (req, res) => {
             price :eventMarketPlace[newIndex].args[4],
         });
 
-        ///Save User
+        ///Save event
         await newEventOrderAdd.save((error, data) => {
             if(error){
                 return HttpMethodStatus.badRequest(res, error.message)
@@ -54,15 +54,153 @@ export const addOrder = async (req, res) => {
         });
       
     } catch (error) {
-      console.log(error);
-      HttpMethodStatus.internalServerError(res, error.message)
+      return HttpMethodStatus.internalServerError(res, error.message)
     }
 };
 
 export const getOrders = async (req, res) => {
-    const orders = await EventOrderAdd.find({})
 
-    HttpMethodStatus.ok(res, 'Get Orders success!', orders)
+    try{
+        const orders = await EventOrderAdd.find({})
+        const eventMarketPlace = await contractMarketPlace.queryFilter('OrderAdded')
+
+        
+        if(!orders){
+            return HttpMethodStatus.badRequest(res, 'Get Orders faile!')
+        }
+        return HttpMethodStatus.ok(res, 'Get Orders success!', eventMarketPlace.length)
+
+    }catch (err){
+        return HttpMethodStatus.badRequest(res, err.message,)
+    }
+}
+
+export const getEventAddOrders = async (req, res) => {
+    try {
+        const eventMarketPlace = await contractMarketPlace.queryFilter('OrderAdded')
+        const convertList = eventMarketPlace.map(e => {
+            return {
+                "transactionHash": e.transactionHash,
+                "orderId": Number(e.args[0]._hex),
+                "seller" : e.args[1],
+                // buyer :e.args[2],
+                "tokenId" :Number(e.args[2]._hex),
+                "paymentToken" :e.args[3],
+                "price" :  Number(e.args[4]._hex) / Math.pow(10, 17),
+            }
+        })
+        return HttpMethodStatus.ok(res, 'get all event add orders in bloc chain', convertList)
+    } catch (error) {
+        return HttpMethodStatus.badRequest(res, error.message)
+    }
+}
+
+export const getEventOrderMatch = async (req, res) => {
+    try {
+        const eventMarketPlace = await contractMarketPlace.queryFilter('OrderMatched')
+        const convertList = eventMarketPlace.map(e => {
+            return {
+                "transactionHash": e.transactionHash,
+                "orderId": Number(e.args[0]._hex),
+                "seller" : e.args[1],
+                "buyer" :e.args[2],
+                "tokenId" :Number(e.args[3]._hex),
+                "paymentToken" :e.args[4],
+                "price" :  Number(e.args[5]._hex) / Math.pow(10, 17),
+            }
+        })
+        HttpMethodStatus.ok(res, 'get all event buy orders in bloc chain', convertList)
+    } catch (error) {
+        return HttpMethodStatus.badRequest(res, error.message)
+    }
+}
+
+
+export const executeOrder = async (req, res) => {
+    try {
+
+        const {seller, buyer, orderId} = req.body
+
+        const order = await EventOrderAdd.findOne({"orderId": orderId})
+        if(!order){
+            return HttpMethodStatus.badRequest(res, 'order not exist')
+        }
+
+        const orderExecute = await EventOrderAdd.findOneAndDelete({"orderId": orderId})
+
+        const isBuyerExist = await User.findOneAndUpdate({"walletAddress": buyer}, {"$push": {"listNFT": orderExecute.orderId}}) 
+
+        const isSellerExist = await User.findOneAndUpdate({"walletAddress": seller}, {"$pull": {"listNFT": orderExecute.orderId}}) 
+
+        if(!isBuyerExist){
+            return HttpMethodStatus.badRequest(res, 'buyer not exist!!')
+        }
+
+        const userBuy = await User.findOne({"walletAddress": buyer})
+
+        if(!isSellerExist){
+            return HttpMethodStatus.badRequest(res, 'seller not exist!!')
+        }
+
+        return HttpMethodStatus.ok(res, 'execute success!', userBuy)
+        
+    } catch (error) {
+        return HttpMethodStatus.badRequest(res, error.message)
+    }
+}
+
+export const cancleOrder = async(req, res) => {
+    try {
+
+        const {orderId} = req.body
+
+        const order = await EventOrderAdd.findOne({"orderId": orderId})
+        if(!order){
+            return HttpMethodStatus.badRequest(res, 'order not exist')
+        }
+        
+        await EventOrderAdd.findOneAndDelete({"orderId": orderId})
+
+        const orders = await EventOrderAdd.find({})
+
+        return HttpMethodStatus.ok(res, 'cancel success!', orders)
+        
+    } catch (error) {
+        return HttpMethodStatus.badRequest(res, error.message)
+    }
+}
+
+export const getNFTUser = async (req, res) => {
+    try {
+        const {seller} = req.body
+
+        const users = await User.find({"walletAddress": seller})
+
+        return HttpMethodStatus.ok(res, 'list NFT', users.listNFT)
+
+    } catch (error) {
+        return HttpMethodStatus.badRequest(res, error.message)
+    }
+}
+
+export const addTokenId = async (req, res) => {
+    try {
+        const {address, orderId} = req.body
+
+        const isUserExist = await User.findOneAndUpdate({"walletAddress": address}, {"$push": {"listNFT": orderId}}) 
+        
+        if(!isUserExist){
+            return HttpMethodStatus.badRequest(res, 'user not exist')
+        }
+        const userBuy = await User.findOne({"walletAddress": address})
+    
+        return HttpMethodStatus.ok(res,'add tokenId success!!!',userBuy)
+
+    } catch (error) {
+        return HttpMethodStatus.badRequest(res, error.message)
+    }
 
 }
+
+
 
