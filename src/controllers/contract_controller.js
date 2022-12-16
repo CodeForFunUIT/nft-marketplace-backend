@@ -23,7 +23,7 @@ const contractMarketPlace = new ethers.Contract(addressMarketPlace, ERC20_ABI_ma
 const contractNNGToken = new ethers.Contract(addressNNGToken, ERC20_ABI_NNGToken, provider)
 const contractNFT = new ethers.Contract(addressNFT, ERC20_ABI_NFT, provider)
 
-
+/// add order và lưu vào db
 export const addOrder = async (req, res) => {
     try {
         const eventMarketPlace = await contractMarketPlace.queryFilter('OrderAdded')
@@ -58,23 +58,51 @@ export const addOrder = async (req, res) => {
     }
 };
 
-export const getOrders = async (req, res) => {
+/// lấy order từ blochain
+export const getOrdersFromBlochain = async (req, res) => {
+    const orderAdds = await contractMarketPlace.queryFilter('OrderAdded')
+    const orderMatchs = await contractMarketPlace.queryFilter('OrderMatched')
+    const orderCancel = await contractMarketPlace.queryFilter('OrderCancelled')
 
-    try{
-        const orders = await EventOrderAdd.find({})
-        const eventMarketPlace = await contractMarketPlace.queryFilter('OrderAdded')
-
-        
-        if(!orders){
-            return HttpMethodStatus.badRequest(res, 'Get Orders faile!')
+    let listOrderAdd = orderAdds.map(e => {
+        return {
+            "orderId": Number(e.args[0]._hex),
+            "tokenId" :Number(e.args[2]._hex),
         }
-        return HttpMethodStatus.ok(res, 'Get Orders success!', eventMarketPlace.length)
-
-    }catch (err){
-        return HttpMethodStatus.badRequest(res, err.message,)
+    })
+    let listOrderMatch = orderMatchs.map(e => {
+        return {
+            "orderId": Number(e.args[0]._hex),
+            "tokenId" :Number(e.args[2]._hex),
+        }
+    })
+    let listOrderCancel = orderCancel.map(e => {
+        return {
+            "orderId": Number(e.args[0]._hex),
+        }
+    })
+    listOrderCancel.forEach(cancle =>  removeItemOnce(listOrderAdd,cancle))
+    listOrderMatch.forEach(match =>  removeItemOnce(listOrderAdd,match))
+    
+    function removeItemOnce(arr, value) {
+        let index = 0;
+        arr.forEach(a => {
+            if(a["orderId"] === value["orderId"]){
+                arr.splice(index, 1);
+                return;
+            }else index++;
+        })
     }
+
+    return HttpMethodStatus.ok(res, 'list order from blochain',listOrderAdd)   
+}
+/// lấy order từ mongodb
+export const getOrdersFromMongo = async(req, res) => {
+    const orders = await EventOrderAdd.find({})
+    return HttpMethodStatus.ok(res, 'list order from mongodb', orders)
 }
 
+/// lấy tất cả event OrderAdded từ blochain
 export const getEventAddOrders = async (req, res) => {
     try {
         const eventMarketPlace = await contractMarketPlace.queryFilter('OrderAdded')
@@ -94,7 +122,7 @@ export const getEventAddOrders = async (req, res) => {
         return HttpMethodStatus.badRequest(res, error.message)
     }
 }
-
+/// lấy tất cả event OrderMatched
 export const getEventOrderMatch = async (req, res) => {
     try {
         const eventMarketPlace = await contractMarketPlace.queryFilter('OrderMatched')
@@ -114,8 +142,7 @@ export const getEventOrderMatch = async (req, res) => {
         return HttpMethodStatus.badRequest(res, error.message)
     }
 }
-
-
+/// mua order thì user mua sẽ tăng order
 export const executeOrder = async (req, res) => {
     try {
 
@@ -128,9 +155,9 @@ export const executeOrder = async (req, res) => {
 
         const orderExecute = await EventOrderAdd.findOneAndDelete({"orderId": orderId})
 
-        const isBuyerExist = await User.findOneAndUpdate({"walletAddress": buyer}, {"$push": {"listNFT": orderExecute.orderId}}) 
+        const isBuyerExist = await User.findOneAndUpdate({"walletAddress": buyer}, {"$push": {"listNFT": orderExecute.tokenId}}) 
 
-        const isSellerExist = await User.findOneAndUpdate({"walletAddress": seller}, {"$pull": {"listNFT": orderExecute.orderId}}) 
+        const isSellerExist = await User.findOneAndUpdate({"walletAddress": seller}, {"$pull": {"listNFT": orderExecute.tokenId}}) 
 
         if(!isBuyerExist){
             return HttpMethodStatus.badRequest(res, 'buyer not exist!!')
@@ -149,6 +176,7 @@ export const executeOrder = async (req, res) => {
     }
 }
 
+///
 export const cancleOrder = async(req, res) => {
     try {
 
@@ -170,19 +198,6 @@ export const cancleOrder = async(req, res) => {
     }
 }
 
-export const getNFTUser = async (req, res) => {
-    try {
-        const {seller} = req.body
-
-        const users = await User.find({"walletAddress": seller})
-
-        return HttpMethodStatus.ok(res, 'list NFT', users.listNFT)
-
-    } catch (error) {
-        return HttpMethodStatus.badRequest(res, error.message)
-    }
-}
-
 export const addTokenId = async (req, res) => {
     try {
         const {address, orderId} = req.body
@@ -199,8 +214,9 @@ export const addTokenId = async (req, res) => {
     } catch (error) {
         return HttpMethodStatus.badRequest(res, error.message)
     }
-
 }
+
+
 
 
 

@@ -16,7 +16,6 @@ const userSchema = new mongoose.Schema({
     listNFT: {
       type: Array, 
     }
-
 })
 
 userSchema.methods.toJSON = function () {

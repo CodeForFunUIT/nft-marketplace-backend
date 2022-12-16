@@ -6,3 +6,21 @@ export const getAllUser = async (req, res) => {
 
     HttpMethodStatus.ok(res, 'get Users success' ,users)
 }
+
+export const getNFTUserFromMongo = async (req, res) => {
+    try {
+        const {address} = req.body
+
+        const users = await User.findOne({"walletAddress": address})
+        if(!users){
+            return HttpMethodStatus.badRequest(res, 'User not exist')
+        }
+
+        return HttpMethodStatus.ok(res, 'list NFT', users.listNFT)
+
+    } catch (error) {
+        return HttpMethodStatus.badRequest(res, error.message)
+    }
+}
+
+

@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import authRouter from "./routers/auth_router.js"
 import contractRouter from "./routers/contract_router.js"
 import userRouter from "./routers/user_router.js"
+import nftRouter from "./routers/nft_router.js"
 import Jwt  from "jsonwebtoken";
 import {authToken} from "./middleware/authorization.js";
 import cors from "cors";
@@ -49,6 +50,7 @@ connectDB();
   app.use("/auth",authRouter)
   app.use("/contract", contractRouter)
   app.use("/user", userRouter)
+  app.use("/nft", nftRouter)
 
   app.get('/books',authToken, (req, res) => {
     res.json({status: 'Success', data: books})
