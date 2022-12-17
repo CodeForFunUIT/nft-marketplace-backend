@@ -23,4 +23,20 @@ export const getNFTUserFromMongo = async (req, res) => {
     }
 }
 
+export const isUserExist = async (req, res) => {
+    try {
+        const {address} = req.body
+
+        const users = await User.findOne({"walletAddress": address})
+        if(!users){
+            return HttpMethodStatus.badRequest(res, 'User not exist')
+        }
+
+        return HttpMethodStatus.ok(res, 'userExist', true)
+
+    } catch (error) {
+        return HttpMethodStatus.badRequest(res, error.message)
+    }
+}
+
 
