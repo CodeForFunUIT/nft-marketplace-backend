@@ -14,7 +14,7 @@ export const getNFTUserFromMongo = async (req, res) => {
 
         var listNFt = [];
 
-        const users = await User.findOne({"walletAddress": address})
+        const users = await User.findOne({"walletAddress": address.toLowerCase()})
 
         if(!users){
             return HttpMethodStatus.badRequest(res, 'User not exist')
@@ -25,7 +25,6 @@ export const getNFTUserFromMongo = async (req, res) => {
 
             listNFt.push(nft)
         }
-
 
         return HttpMethodStatus.ok(res, 'list NFT', listNFt)
 
