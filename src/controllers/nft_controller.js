@@ -31,3 +31,9 @@ export const addNFT = async (req, res)  => {
     }
 }
 
+export const getNFTs = async (req, res) => {
+    const nfts = await NFT.find({});
+
+    HttpMethodStatus.ok(res, 'get NFT success' ,nfts)
+}
+

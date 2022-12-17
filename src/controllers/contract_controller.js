@@ -4,6 +4,7 @@ import EventOrderAdd from "../models/event_order_add.js";
 import ethers from "ethers";
 import User from "../models/user.js";
 import NFT from "../models/nft.js";
+import statusNFT from "../utility/enum.js";
 
 const INFURA_ID = '615672c98038474aa00db41473c787f8'
 const provider = new ethers.providers.JsonRpcProvider(`https://goerli.infura.io/v3/${INFURA_ID}`)
@@ -35,9 +36,15 @@ export const addOrder = async (req, res) => {
         if(isContractExist){
            return HttpMethodStatus.badRequest(res, 'orderId exist')
         }
-
-        const nft = await NFT.findOne({'nftID': eventMarketPlace[newIndex].args[2]}, {name: 1});
-
+        // const nft = await NFT.findOneAndUpdate({'nftID': eventMarketPlace[newIndex].args[2]}, 
+        // {"$set": {price: 250000000000000000000, status: "onStock", addressOwner: eventMarketPlace[newIndex].args[1].toLowerCase()}}).exec();
+        const nft = await NFT.findOneAndUpdate(
+            {'nftID': eventMarketPlace[newIndex].args[2]},
+            {"$set": {price: eventMarketPlace[newIndex].args[4], 
+                status: statusNFT.SELLING,
+                addressOwner: eventMarketPlace[newIndex].args[1].toLowerCase()}
+            }).exec();
+        
         const newEventOrderAdd = new EventOrderAdd({
             transactionHash: eventMarketPlace[newIndex].transactionHash,
             orderId: eventMarketPlace[newIndex].args[0],
@@ -46,7 +53,7 @@ export const addOrder = async (req, res) => {
             tokenId :eventMarketPlace[newIndex].args[2],
             paymentToken :eventMarketPlace[newIndex].args[3],
             price :eventMarketPlace[newIndex].args[4],
-            status: "selling",
+            status: statusNFT.SELLING,
             name: nft.name
         });
 
@@ -65,7 +72,7 @@ export const addOrder = async (req, res) => {
 
 export const hackOrder = async (req, res) => {
     try {
-        const {transactionHash, orderId, seller,tokenId,paymentToken,price, name} = req.body
+        const {transactionHash, orderId, seller,tokenId,paymentToken, price, name} = req.body
 
         const newEventOrderAdd = new EventOrderAdd({
             transactionHash: transactionHash,
@@ -75,7 +82,7 @@ export const hackOrder = async (req, res) => {
             tokenId :tokenId,
             paymentToken :paymentToken,
             price :price,
-            status: "selling",
+            status: statusNFT.SELLING,
             name: name,
         });
 
@@ -170,7 +177,8 @@ export const getEventOrderMatch = async (req, res) => {
                 "buyer" :e.args[2],
                 "tokenId" :Number(e.args[3]._hex),
                 "paymentToken" :e.args[4],
-                "price" :  Number(e.args[5]._hex) / Math.pow(10, 17),
+                "price" :  Number(e.args[5]._hex) 
+                // / Math.pow(10, 17),
             }
         })
         HttpMethodStatus.ok(res, 'get all event buy orders in bloc chain', convertList)
@@ -191,9 +199,12 @@ export const executeOrder = async (req, res) => {
 
         const orderExecute = await EventOrderAdd.findOneAndDelete({"orderId": orderId})
 
-        const isBuyerExist = await User.findOneAndUpdate({"walletAddress": buyer.toLowerCase()}, {"$push": {"listNFT": orderExecute.tokenId}}) 
+        const isBuyerExist = await User.findOneAndUpdate({"walletAddress": buyer.toLowerCase()}, {"$push": {"listNFT": orderExecute.tokenId}, }) 
 
         const isSellerExist = await User.findOneAndUpdate({"walletAddress": seller.toLowerCase()}, {"$pull": {"listNFT": orderExecute.tokenId}}) 
+
+        await NFT.findOneAndUpdate({"nftID": orderExecute.tokenId}, {"$set":{"addressOwner": buyer, "status": statusNFT.ONSTOCK}})
+
 
         if(!isBuyerExist){
             return HttpMethodStatus.badRequest(res, 'buyer not exist!!')
@@ -211,6 +222,7 @@ export const executeOrder = async (req, res) => {
         return HttpMethodStatus.badRequest(res, error.message)
     }
 }
+
 
 ///
 export const cancleOrder = async(req, res) => {
@@ -234,26 +246,6 @@ export const cancleOrder = async(req, res) => {
     }
 }
 
-export const addTokenId = async (req, res) => {
-    try {
-        const {address, orderId} = req.body
-
-        // const isUserExist = await User.findOneAndUpdate({"walletAddress": address.toLowerCase()}, {"$push": {"listNFT": orderId}}) 
-        const isUserExist = await User.findOneAndUpdate(
-            {"walletAddress": address.toLowerCase()},      
-            {$addToSet: {'listNFT': orderId}}).exec()   
-
-        if(!isUserExist){
-            return HttpMethodStatus.badRequest(res, 'user not exist')
-        }
-        const userBuy = await User.findOne({"walletAddress": address.toLowerCase()})
-    
-        return HttpMethodStatus.ok(res,'add tokenId success!!!',userBuy)
-
-    } catch (error) {
-        return HttpMethodStatus.badRequest(res, error.message)
-    }
-}
 
 
 

@@ -50,3 +50,24 @@ export const isUserExist = async (req, res) => {
 }
 
 
+export const addTokenId = async (req, res) => {
+    try {
+        const {address, tokenId} = req.body
+
+        const user = await User.findOneAndUpdate(
+            {"walletAddress": address.toLowerCase()},      
+            {$addToSet: {'listNFT': tokenId}},
+            {new: true}).exec()     
+
+        if(!user){
+            return HttpMethodStatus.badRequest(res, 'user not exist')
+        }
+    
+        return HttpMethodStatus.ok(res,'add tokenId success!!!',user)
+
+    } catch (error) {
+        return HttpMethodStatus.badRequest(res, error.message)
+    }
+}
+
+

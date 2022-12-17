@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-
+import statusNFT from "../utility/enum.js";
 const nftSchema = new mongoose.Schema({
     nftID: {
         type: Number,
@@ -23,7 +23,7 @@ const nftSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        default: 'selling'
+        default: statusNFT.SELLING
     },
     chain: {
         type: String,

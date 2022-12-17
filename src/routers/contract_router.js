@@ -7,7 +7,6 @@ import {
     executeOrder,
     getEventOrderMatch,
     cancleOrder,
-    addTokenId,
     getOrdersFromBlochain,
     getOrdersFromMongo,
     hackOrder,
@@ -22,6 +21,5 @@ router.get('/getEventAddOrders', getEventAddOrders)
 router.get('/getEventOrderMatch',getEventOrderMatch)
 router.post('/executeOrder', executeOrder)
 router.post('/cancleOrder',cancleOrder)
-router.post('/addTokenId', addTokenId)
 
 export default router
