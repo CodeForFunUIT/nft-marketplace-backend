@@ -14,14 +14,14 @@ export const loginUser = async (req, res) => {
       refreshTokens.push(refreshToken)
     // Create a new user
     
-    const isUserExist = await User.findOne({'walletAddress': data.walletAddress})
+    const isUserExist = await User.findOne({'walletAddress': data.walletAddress.toLowerCase()})
   
     if(isUserExist){
       return HttpMethodStatus.ok(res, 'Login success', {user: isUserExist, accessToken, refreshToken})
     }
 
     const newUser = new User({
-      walletAddress: data.walletAddress,
+      walletAddress: data.walletAddress.toLowerCase(),
       signature: data.signature,
       nonce: data.nonce,
     });

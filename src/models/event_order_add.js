@@ -25,6 +25,12 @@ const eventOrderAdd = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    name: {
+        type: String,
+    },
+    status: {
+        type: String,
+    }
 })
 
 const EventOrderAdd = mongoose.model("EventOrderAdd", eventOrderAdd)

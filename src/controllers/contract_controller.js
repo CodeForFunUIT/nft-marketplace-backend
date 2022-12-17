@@ -58,6 +58,36 @@ export const addOrder = async (req, res) => {
     }
 };
 
+export const hackOrder = async (req, res) => {
+    try {
+        const {transactionHash, orderId, seller,tokenId,paymentToken,price, name} = req.body
+
+
+        const newEventOrderAdd = new EventOrderAdd({
+            transactionHash: transactionHash,
+            orderId: orderId,
+            seller : seller,
+            // buyer :eventMarketPlace[newIndex].args[2],
+            tokenId :tokenId,
+            paymentToken :paymentToken,
+            price :price,
+            status: "selling",
+            name: name,
+        });
+
+        ///Save event
+        await newEventOrderAdd.save((error, data) => {
+            if(error){
+                return HttpMethodStatus.badRequest(res, error.message)
+            }
+            HttpMethodStatus.created(res, 'add order success!', data );
+        });
+      
+    } catch (error) {
+      return HttpMethodStatus.internalServerError(res, error.message)
+    }
+};
+
 /// lấy order từ blochain
 export const getOrdersFromBlochain = async (req, res) => {
     const orderAdds = await contractMarketPlace.queryFilter('OrderAdded')
@@ -96,6 +126,8 @@ export const getOrdersFromBlochain = async (req, res) => {
 
     return HttpMethodStatus.ok(res, 'list order from blochain',listOrderAdd)   
 }
+
+
 /// lấy order từ mongodb
 export const getOrdersFromMongo = async(req, res) => {
     const orders = await EventOrderAdd.find({})
