@@ -23,7 +23,6 @@ export const loginUser = async (req, res) => {
     const newUser = new User({
       walletAddress: data.walletAddress.toLowerCase(),
       signature: data.signature,
-      nonce: data.nonce,
     });
 
     ///Save User
