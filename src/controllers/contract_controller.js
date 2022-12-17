@@ -66,7 +66,7 @@ export const addOrder = async (req, res) => {
 export const hackOrder = async (req, res) => {
     try {
         const {transactionHash, orderId, seller,tokenId,paymentToken,price, name} = req.body
-            
+
         const newEventOrderAdd = new EventOrderAdd({
             transactionHash: transactionHash,
             orderId: orderId,
@@ -238,8 +238,11 @@ export const addTokenId = async (req, res) => {
     try {
         const {address, orderId} = req.body
 
-        const isUserExist = await User.findOneAndUpdate({"walletAddress": address.toLowerCase()}, {"$push": {"listNFT": orderId}}) 
-        
+        // const isUserExist = await User.findOneAndUpdate({"walletAddress": address.toLowerCase()}, {"$push": {"listNFT": orderId}}) 
+        const isUserExist = await User.findOneAndUpdate(
+            {"walletAddress": address.toLowerCase()},      
+            {$addToSet: {'listNFT': orderId}}).exec()   
+
         if(!isUserExist){
             return HttpMethodStatus.badRequest(res, 'user not exist')
         }
