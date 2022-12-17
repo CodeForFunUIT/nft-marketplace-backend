@@ -1,5 +1,6 @@
 import HttpMethodStatus from "../utility/static.js";
 import User from "../models/user.js";
+import NFT from "../models/nft.js";
 
 export const getAllUser = async (req, res) => {
     const users = await User.find({});
@@ -11,12 +12,22 @@ export const getNFTUserFromMongo = async (req, res) => {
     try {
         const {address} = req.body
 
+        var listNFt = [];
+
         const users = await User.findOne({"walletAddress": address})
+
+        for (let id of users.listNFT){
+            const nft = await NFT.findOne({'nftID': id})
+
+            listNFt.push(nft)
+        }
+
+
         if(!users){
             return HttpMethodStatus.badRequest(res, 'User not exist')
         }
 
-        return HttpMethodStatus.ok(res, 'list NFT', users.listNFT)
+        return HttpMethodStatus.ok(res, 'list NFT', listNFt)
 
     } catch (error) {
         return HttpMethodStatus.badRequest(res, error.message)
