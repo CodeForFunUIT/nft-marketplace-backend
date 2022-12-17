@@ -14,7 +14,7 @@ export const addNFT = async (req, res)  => {
         // orderID: 
         addressOwner: data.addressOwner,
         // uri: {type: String,default: '',},
-        nameNFT: data.nameNFT,
+        name: data.name,
         // status: {type: Number,},
         // chain: ,
         price: data.price,
@@ -30,3 +30,4 @@ export const addNFT = async (req, res)  => {
       HttpMethodStatus.internalServerError(res, error.message)
     }
 }
+

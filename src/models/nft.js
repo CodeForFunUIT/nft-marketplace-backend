@@ -17,7 +17,7 @@ const nftSchema = new mongoose.Schema({
         type: String,
         default: '',
     },
-    nameNFT: {
+    name: {
         type: String,
         require: true,
     },

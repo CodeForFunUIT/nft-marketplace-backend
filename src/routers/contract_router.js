@@ -11,6 +11,7 @@ import {
     getOrdersFromBlochain,
     getOrdersFromMongo,
     hackOrder,
+    checkNFT,
 } from '../controllers/contract_controller.js'
 import { authToken } from "../middleware/authorization.js";
 
@@ -23,4 +24,6 @@ router.get('/getEventOrderMatch',getEventOrderMatch)
 router.post('/executeOrder', executeOrder)
 router.post('/cancleOrder',cancleOrder)
 router.post('/addTokenId', addTokenId)
+router.get("/checkNFT",checkNFT)
+
 export default router

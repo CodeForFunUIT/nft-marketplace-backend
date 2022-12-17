@@ -3,6 +3,7 @@ import HttpMethodStatus from "../utility/static.js";
 import EventOrderAdd from "../models/event_order_add.js";
 import ethers from "ethers";
 import User from "../models/user.js";
+import NFT from "../models/nft.js";
 
 const INFURA_ID = '615672c98038474aa00db41473c787f8'
 const provider = new ethers.providers.JsonRpcProvider(`https://goerli.infura.io/v3/${INFURA_ID}`)
@@ -35,6 +36,8 @@ export const addOrder = async (req, res) => {
            return HttpMethodStatus.badRequest(res, 'orderId exist')
         }
 
+        const nft = await NFT.findOne({'nftID': 1}, {name: 1});
+
         const newEventOrderAdd = new EventOrderAdd({
             transactionHash: eventMarketPlace[newIndex].transactionHash,
             orderId: eventMarketPlace[newIndex].args[0],
@@ -43,6 +46,8 @@ export const addOrder = async (req, res) => {
             tokenId :eventMarketPlace[newIndex].args[2],
             paymentToken :eventMarketPlace[newIndex].args[3],
             price :eventMarketPlace[newIndex].args[4],
+            status: "selling",
+            name: nft.name
         });
 
         ///Save event
@@ -57,6 +62,31 @@ export const addOrder = async (req, res) => {
       return HttpMethodStatus.internalServerError(res, error.message)
     }
 };
+
+export const checkNFT = async (req, res) => {
+ 
+
+        // const isContractExist = await EventOrderAdd.findOne({'orderId': 1}) 
+
+    //     const nameNFT = NFT.findOne({'nftID': 1},{"name": 1,   
+    //     "_id" : 0,
+    //    "nftID" : 0,
+    //    "orderID" : 0,
+    //    "addressOwner" : 0,
+    //    "uri" : 0,
+    //    "chain" : 0,
+    //    "price" : 0,
+    //    "paymentToken" : 0,
+    //    "created_at" : 0,
+    //    "updatedAt" : 0,
+    //    "__v" : 0 }).exec((Result)=>{
+    //     console.log(Result);
+    // });  
+    
+    var name ;
+
+}
+
 
 export const hackOrder = async (req, res) => {
     try {
