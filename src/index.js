@@ -15,7 +15,7 @@ const app = express();
 
 const server = http.createServer(app);
 app.use(express.json({ limit: "50mb", extended: true }));
-const allowedOrigins = ['http://localhost:3000'];
+const allowedOrigins = ['http://localhost:3000','https://nft-marketplace-blue-one.vercel.app/'];
 
 const options = cors.CorsOption = {
   origin: allowedOrigins
