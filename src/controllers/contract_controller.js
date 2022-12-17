@@ -63,36 +63,10 @@ export const addOrder = async (req, res) => {
     }
 };
 
-export const checkNFT = async (req, res) => {
- 
-
-        // const isContractExist = await EventOrderAdd.findOne({'orderId': 1}) 
-
-    //     const nameNFT = NFT.findOne({'nftID': 1},{"name": 1,   
-    //     "_id" : 0,
-    //    "nftID" : 0,
-    //    "orderID" : 0,
-    //    "addressOwner" : 0,
-    //    "uri" : 0,
-    //    "chain" : 0,
-    //    "price" : 0,
-    //    "paymentToken" : 0,
-    //    "created_at" : 0,
-    //    "updatedAt" : 0,
-    //    "__v" : 0 }).exec((Result)=>{
-    //     console.log(Result);
-    // });  
-    
-    var name ;
-
-}
-
-
 export const hackOrder = async (req, res) => {
     try {
         const {transactionHash, orderId, seller,tokenId,paymentToken,price, name} = req.body
-
-
+            
         const newEventOrderAdd = new EventOrderAdd({
             transactionHash: transactionHash,
             orderId: orderId,

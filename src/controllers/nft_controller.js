@@ -8,11 +8,11 @@ export const addNFT = async (req, res)  => {
         if(isNftExist){
             return HttpMethodStatus.badRequest(res, 'nft is exist')
         }
-
+    
     const newNft = new NFT({
         nftID: data.nftID,
         // orderID: 
-        addressOwner: data.addressOwner,
+        addressOwner: data.addressOwner.toLowerCase(),
         // uri: {type: String,default: '',},
         name: data.name,
         // status: {type: Number,},
