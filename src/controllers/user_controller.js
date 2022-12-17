@@ -37,7 +37,7 @@ export const isUserExist = async (req, res) => {
     try {
         const {address} = req.body
 
-        const users = await User.findOne({"walletAddress": address})
+        const users = await User.findOne({"walletAddress": address.toLowerCase()})
         if(!users){
             return HttpMethodStatus.badRequest(res, 'User not exist')
         }
