@@ -16,16 +16,16 @@ export const getNFTUserFromMongo = async (req, res) => {
 
         const users = await User.findOne({"walletAddress": address})
 
+        if(!users){
+            return HttpMethodStatus.badRequest(res, 'User not exist')
+        }
+
         for (let id of users.listNFT){
             const nft = await NFT.findOne({'nftID': id})
 
             listNFt.push(nft)
         }
 
-
-        if(!users){
-            return HttpMethodStatus.badRequest(res, 'User not exist')
-        }
 
         return HttpMethodStatus.ok(res, 'list NFT', listNFt)
 
