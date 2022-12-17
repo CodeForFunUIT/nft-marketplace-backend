@@ -36,7 +36,7 @@ export const addOrder = async (req, res) => {
            return HttpMethodStatus.badRequest(res, 'orderId exist')
         }
 
-        const nft = await NFT.findOne({'nftID': 1}, {name: 1});
+        const nft = await NFT.findOne({'nftID': eventMarketPlace[newIndex].args[2]}, {name: 1});
 
         const newEventOrderAdd = new EventOrderAdd({
             transactionHash: eventMarketPlace[newIndex].transactionHash,
