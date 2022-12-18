@@ -279,6 +279,8 @@ export const cancelOrder = async(req, res) => {
         
         await EventOrderAdd.findOneAndDelete({"orderId": orderId})
 
+        await NFT.findOneAndUpdate({tokenId: order.tokenId}, {status: statusNFT.ONSTOCK});
+        
         const orders = await EventOrderAdd.find({})
 
         return HttpMethodStatus.ok(res, 'cancel success!', orders)
