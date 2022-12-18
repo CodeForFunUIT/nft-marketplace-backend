@@ -21,7 +21,7 @@ export const getNFTUserFromMongo = async (req, res) => {
         }
 
         for (let id of users.listNFT){
-            const nft = await NFT.findOne({'nftID': id})
+            const nft = await NFT.findOne({'tokenId': id})
 
             listNFt.push(nft)
         }

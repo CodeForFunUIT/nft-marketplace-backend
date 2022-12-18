@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import statusNFT from "../utility/enum.js";
 const nftSchema = new mongoose.Schema({
-    nftID: {
+    tokenId: {
         type: Number,
         require: true
     },
@@ -38,9 +38,7 @@ const nftSchema = new mongoose.Schema({
     },
 },
 {
-    timestamps: { 
-        createdAt: 'created_at'
-    }
+    timestamps: {createdAt: 'created_at'}
 }
 )
 

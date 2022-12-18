@@ -39,10 +39,11 @@ export const addOrder = async (req, res) => {
         // const nft = await NFT.findOneAndUpdate({'nftID': eventMarketPlace[newIndex].args[2]}, 
         // {"$set": {price: 250000000000000000000, status: "onStock", addressOwner: eventMarketPlace[newIndex].args[1].toLowerCase()}}).exec();
         const nft = await NFT.findOneAndUpdate(
-            {'nftID': eventMarketPlace[newIndex].args[2]},
+            {'tokenId': eventMarketPlace[newIndex].args[2]},
             {"$set": {price: eventMarketPlace[newIndex].args[4], 
                 status: statusNFT.SELLING,
-                addressOwner: eventMarketPlace[newIndex].args[1].toLowerCase()}
+                addressOwner: eventMarketPlace[newIndex].args[1].toLowerCase(),
+                orderID: eventMarketPlace[newIndex].args[0],}
             }).exec();
         
         const newEventOrderAdd = new EventOrderAdd({
@@ -203,7 +204,7 @@ export const executeOrder = async (req, res) => {
 
         const isSellerExist = await User.findOneAndUpdate({"walletAddress": seller.toLowerCase()}, {"$pull": {"listNFT": orderExecute.tokenId}}) 
 
-        await NFT.findOneAndUpdate({"nftID": orderExecute.tokenId}, {"$set":{"addressOwner": buyer, "status": statusNFT.ONSTOCK}})
+        await NFT.findOneAndUpdate({"tokenId": orderExecute.tokenId}, {"$set":{"addressOwner": buyer, "status": statusNFT.ONSTOCK}})
 
 
         if(!isBuyerExist){
@@ -228,7 +229,7 @@ export const executeOrder = async (req, res) => {
 export const cancleOrder = async(req, res) => {
     try {
 
-        const {orderId} = req.body
+        const { orderId } = req.body
 
         const order = await EventOrderAdd.findOne({"orderId": orderId})
         if(!order){

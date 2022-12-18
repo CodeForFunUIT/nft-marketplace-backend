@@ -4,13 +4,13 @@ import NFT from "../models/nft.js";
 export const addNFT = async (req, res)  => {
     try {
         const data = req.body
-        const isNftExist = await NFT.findOne({'nftID': data.nftID})
+        const isNftExist = await NFT.findOne({'tokenId': data.tokenId})
         if(isNftExist){
             return HttpMethodStatus.badRequest(res, 'nft is exist')
         }
     
     const newNft = new NFT({
-        nftID: data.nftID,
+        tokenId: data.tokenId,
         // orderID: 
         addressOwner: data.addressOwner.toLowerCase(),
         // uri: {type: String,default: '',},
