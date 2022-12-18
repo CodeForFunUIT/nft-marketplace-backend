@@ -123,7 +123,7 @@ export const getOrdersFromBlochain = async (req, res) => {
             "orderId": Number(e.args[0]._hex),
         }
     })
-    listOrderCancel.forEach(cancle =>  removeItemOnce(listOrderAdd,cancle))
+    listOrderCancel.forEach(cancel =>  removeItemOnce(listOrderAdd,cancel))
     listOrderMatch.forEach(match =>  removeItemOnce(listOrderAdd,match))
     
     function removeItemOnce(arr, value) {
@@ -226,7 +226,7 @@ export const executeOrder = async (req, res) => {
 
 
 ///
-export const cancleOrder = async(req, res) => {
+export const cancelOrder = async(req, res) => {
     try {
 
         const { orderId } = req.body
