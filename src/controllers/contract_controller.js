@@ -70,6 +70,48 @@ export const addOrder = async (req, res) => {
     }
 };
 
+/// add order và lưu vào db
+export const addOrderManual = async (req, res) => {
+    try {
+        const data = req.body
+
+        const isContractExist = await EventOrderAdd.findOne({'orderId': data.orderId}) 
+
+        if(isContractExist){
+           return HttpMethodStatus.badRequest(res, 'orderId exist')
+        }
+      const nft = await NFT.findOneAndUpdate(
+            {'tokenId': data.tokenId},
+            {"$set": {price: data.price, 
+                status: statusNFT.SELLING,
+                orderId: data.orderId,}
+            }).exec();
+        
+        const newEventOrderAdd = new EventOrderAdd({
+            transactionHash: data.transactionHash,
+            orderId: data.orderId,
+            seller : data.seller.toLowerCase(),
+            // buyer :eventMarketPlace[newIndex].args[2],
+            tokenId :data.tokenId,
+            paymentToken : data.paymentToken,
+            price :data.price,
+            status: statusNFT.SELLING,
+            name: nft.name
+        });
+
+        ///Save event
+        newEventOrderAdd.save((error, data) => {
+            if(error){
+                return HttpMethodStatus.badRequest(res, error.message)
+            }
+            HttpMethodStatus.created(res, 'add order success!', data );
+        });
+      
+    } catch (error) {
+      return HttpMethodStatus.internalServerError(res, error.message)
+    }
+};
+
 export const hackOrder = async (req, res) => {
     try {
         const {transactionHash, orderId, seller,tokenId,paymentToken, price, name} = req.body

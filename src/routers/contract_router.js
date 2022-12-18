@@ -10,10 +10,12 @@ import {
     getOrdersFromBlochain,
     getOrdersFromMongo,
     hackOrder,
+    addOrderManual,
 } from '../controllers/contract_controller.js'
 import { authToken } from "../middleware/authorization.js";
 
 router.get('/addOrder', addOrder)
+router.post('/addOrderManual',addOrderManual)
 router.post('/hackOrder',hackOrder),
 router.get('/getOrdersFromBlochain',getOrdersFromBlochain),
 router.get('/getOrdersFromMongo',getOrdersFromMongo),
