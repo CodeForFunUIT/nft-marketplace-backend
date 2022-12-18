@@ -5,7 +5,7 @@ const nftSchema = new mongoose.Schema({
         type: Number,
         require: true
     },
-    orderID: {
+    orderId: {
         type: Number,
         default: 0
     },

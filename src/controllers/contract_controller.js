@@ -42,8 +42,7 @@ export const addOrder = async (req, res) => {
             {'tokenId': eventMarketPlace[newIndex].args[2]},
             {"$set": {price: eventMarketPlace[newIndex].args[4], 
                 status: statusNFT.SELLING,
-                addressOwner: eventMarketPlace[newIndex].args[1].toLowerCase(),
-                orderID: eventMarketPlace[newIndex].args[0],}
+                orderId: eventMarketPlace[newIndex].args[0],}
             }).exec();
         
         const newEventOrderAdd = new EventOrderAdd({
