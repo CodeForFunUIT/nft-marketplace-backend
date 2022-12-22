@@ -50,4 +50,17 @@ export const updateOwner = async (req, res) => {
     return HttpMethodStatus.ok(res, 'update NFT success' ,nft)
 }
 
+export const updateUri = async (req, res) => {
+
+    const data = req.body
+
+    const nft = await NFT.findOneAndUpdate({tokenId: data.tokenId}, {uri: data.uri}, {new: true});
+
+    if(!nft){
+        return HttpMethodStatus.badRequest(res, 'nft not exist')
+    }
+
+    return HttpMethodStatus.ok(res, 'update NFT success' ,nft)
+}
+
 
