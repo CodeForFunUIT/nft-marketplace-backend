@@ -199,10 +199,10 @@ export const getEventAddOrders = async (req, res) => {
                 // buyer :e.args[2],
                 "tokenId" :Number(e.args[2]._hex),
                 "paymentToken" :e.args[3],
-                "price" :  Number(e.args[4]._hex) / Math.pow(10, 17),
+                "price" :  Number(e.args[4]._hex),
             }
         })
-        return HttpMethodStatus.ok(res, 'get all event add orders in bloc chain', convertList)
+        return HttpMethodStatus.ok(res, 'get all event add orders in block chain', convertList)
     } catch (error) {
         return HttpMethodStatus.badRequest(res, error.message)
     }

@@ -15,7 +15,6 @@ const nftSchema = new mongoose.Schema({
     },
     uri: {
         type: String,
-        default: '',
     },
     name: {
         type: String,
