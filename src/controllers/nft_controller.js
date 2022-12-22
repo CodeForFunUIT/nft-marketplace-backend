@@ -1,5 +1,6 @@
 import HttpMethodStatus from "../utility/static.js";
 import NFT from "../models/nft.js";
+import User from "../models/user.js";
 
 export const addNFT = async (req, res)  => {
     try {
@@ -9,21 +10,29 @@ export const addNFT = async (req, res)  => {
             return HttpMethodStatus.badRequest(res, 'nft is exist')
         }
     
-    const newNft = new NFT({
-        tokenId: data.tokenId,
-        // orderID: 
-        addressOwner: data.addressOwner.toLowerCase(),
-        uri: data.uri,
-        name: data.name,
-        status: data.status,
-        // chain: ,
-        price: data.price,
-    });
+        const newNft = new NFT({
+            tokenId: data.tokenId,
+            // orderID: 
+            addressOwner: data.addressOwner.toLowerCase(),
+            uri: data.uri,
+            name: data.name,
+            status: data.status,
+            // chain: ,
+            price: data.price,
+        });
 
-    ///Save nft
-    newNft.save((error, nft) => {
-        HttpMethodStatus.created(res, 'create new NFT success!', nft);
-    });
+        const user = await User.findOneAndUpdate(
+            {"walletAddress": data.addressOwner.toLowerCase()},      
+            {$addToSet: {'listNFT': data.tokenId}})     
+
+        if(!user){
+            return HttpMethodStatus.badRequest(res, 'user not exist')
+        }
+
+        ///Save nft
+        newNft.save((error, nft) => {
+            HttpMethodStatus.created(res, 'create new NFT success!', nft);
+        });
 
     } catch (error) {
       console.log(error);
