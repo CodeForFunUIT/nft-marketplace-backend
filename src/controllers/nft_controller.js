@@ -13,9 +13,9 @@ export const addNFT = async (req, res)  => {
         tokenId: data.tokenId,
         // orderID: 
         addressOwner: data.addressOwner.toLowerCase(),
-        // uri: {type: String,default: '',},
+        uri: data.uri,
         name: data.name,
-        // status: {type: Number,},
+        status: data.status,
         // chain: ,
         price: data.price,
     });
