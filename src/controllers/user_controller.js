@@ -70,4 +70,24 @@ export const addTokenId = async (req, res) => {
     }
 }
 
+export const removeTokenId = async (req, res) => {
+    try {
+        const {address, tokenId} = req.body
+
+        const user = await User.findOneAndUpdate(
+            {"walletAddress": address.toLowerCase()},      
+            {$pull: {'listNFT': tokenId}},
+            {new: true}).exec()     
+
+        if(!user){
+            return HttpMethodStatus.badRequest(res, 'user not exist')
+        }
+    
+        return HttpMethodStatus.ok(res,'remove tokenId success!!!',user)
+
+    } catch (error) {
+        return HttpMethodStatus.badRequest(res, error.message)
+    }
+}
+
 
