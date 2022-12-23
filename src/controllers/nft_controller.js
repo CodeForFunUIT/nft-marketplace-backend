@@ -50,7 +50,7 @@ export const updateOwner = async (req, res) => {
     try {     
         const data = req.body
 
-        const nft = await NFT.findOneAndUpdate({tokenId: data.tokenId}, {addressOwner: data.addressOwner}, {new: true});
+        const nft = await NFT.findOneAndUpdate({tokenId: data.tokenId}, {addressOwner: data.addressOwner.toLowerCase()}, {new: true});
 
         if(!nft){
             return HttpMethodStatus.badRequest(res, 'nft not exist')
