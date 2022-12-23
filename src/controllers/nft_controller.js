@@ -1,6 +1,7 @@
 import HttpMethodStatus from "../utility/static.js";
 import NFT from "../models/nft.js";
 import User from "../models/user.js";
+import statusNFT from "../utility/enum.js";
 
 export const addNFT = async (req, res)  => {
     try {
@@ -75,6 +76,24 @@ export const updateUri = async (req, res) => {
         }
 
         return HttpMethodStatus.ok(res, 'update NFT success' ,nft)   
+    } catch (error) {
+        return HttpMethodStatus.badRequest(res, error.message)
+    }
+}
+
+export const updateStatusToStock = async (req, res) => {
+
+    const data = req.body
+
+    try {
+        
+        const nft = await NFT.findOneAndUpdate({tokenId: data.tokenId}, {status: statusNFT.ONSTOCK}, {new: true});
+
+        if(!nft){
+            return HttpMethodStatus.badRequest(res, 'nft not exist')
+        }
+
+        return HttpMethodStatus.ok(res, 'update status NFT to onStock success' ,nft)   
     } catch (error) {
         return HttpMethodStatus.badRequest(res, error.message)
     }
