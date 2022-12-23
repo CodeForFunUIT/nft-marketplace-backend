@@ -54,7 +54,8 @@ export const addOrder = async (req, res) => {
             paymentToken :eventMarketPlace[newIndex].args[3],
             price :eventMarketPlace[newIndex].args[4],
             status: statusNFT.SELLING,
-            name: nft.name
+            name: nft.name,
+            uri: nft.uri,
         });
 
         ///Save event
@@ -96,7 +97,8 @@ export const addOrderManual = async (req, res) => {
             paymentToken : data.paymentToken,
             price :data.price,
             status: statusNFT.SELLING,
-            name: nft.name
+            name: nft.name,
+            uri: nft.uri,
         });
 
         ///Save event

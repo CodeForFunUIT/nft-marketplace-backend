@@ -9,6 +9,9 @@ const eventOrderAdd = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    uri: {
+        type: String,
+    },
     seller :{
       type: String,
       required: true,
