@@ -1,7 +1,10 @@
 import Jwt  from "jsonwebtoken";
 import HttpMethodStatus from "../utility/static.js";
 import User from "../models/user.js";
-
+import crypto from "crypto";
+import { Buffer } from "buffer";
+import { ethers } from "ethers";
+import ethUtil from "ethereumjs-util"
 let refreshTokens = []
 
 // register user
@@ -73,5 +76,36 @@ export const randomNounce = (req, res) => {
     return HttpMethodStatus.badRequest(res, 'something Wrong!!')
   }
   return HttpMethodStatus.ok(res, 'random nonce', randStr)
+}
+
+export const verify = async (req, res) => {
+  const data = req.body
+
+  User.findOne({walletAddress: data.address}).then(user => {
+    if(!user){
+      return HttpMethodStatus.badRequest(res, 'user not exist');
+    }
+    const msg = `Sign message with nonce: ${data.nonce}`;
+
+    const msgHex = ethUtil.bufferToHex(Buffer.from(msg));
+    const msgBuffer = ethUtil.toBuffer(msgHex)
+    const msgHash = ethUtil.hashPersonalMessage(msgBuffer);
+    const signatureBuffer = ethUtil.bufferToHex(user.signature);
+    const signatureParams = ethUtil.fromRpcSig(signatureBuffer);
+    const publicKey = ethUtil.ecrecover(
+      msgHash,
+      signatureParams.v,
+      signatureParams.r,
+      signatureParams.s
+    );
+    const addressBuffer = ethUtil.publicToAddress(publicKey);
+    const address = ethUtil.bufferToHex(addressBuffer);
+
+    if (address.toLowerCase() === user.walletAddress) {
+      return HttpMethodStatus.ok(res,"Signature verification success", true);
+    } else {
+      return HttpMethodStatus.badRequest(res, 'Signature verification failed');
+    }
+  })
 }
 
