@@ -26,6 +26,7 @@ export const loginUser = async (req, res) => {
     const newUser = new User({
       walletAddress: data.walletAddress.toLowerCase(),
       signature: data.signature,
+      nonce: data.nonce,
     });
 
     ///Save User
@@ -85,7 +86,7 @@ export const verify = async (req, res) => {
     if(!user){
       return HttpMethodStatus.badRequest(res, 'user not exist');
     }
-    const msg = `Sign message with nonce: ${data.nonce}`;
+    const msg = `Sign message with nonce: ${user.nonce}`;
 
     const msgHex = ethUtil.bufferToHex(Buffer.from(msg));
     const msgBuffer = ethUtil.toBuffer(msgHex)

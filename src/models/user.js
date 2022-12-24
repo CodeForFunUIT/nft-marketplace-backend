@@ -9,6 +9,9 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    nonce: {
+      type: Number,
+    },
     listNFT: {
       type: Array, 
     }
