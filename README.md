@@ -1,3 +1,5 @@
+# NFT Marketplace Back end
+
 ## MSSV
 ```bash
 19521931 - Lê Anh Nhân
@@ -6,8 +8,16 @@
 
 ## Getting Started
 
-```bash
-B1: npm i
-B2: npm run dev
+Install package module: 
+```shell
+npm i
 ```
+
+Run in local:
+```shell
+npm run dev
+```
+
+
+
 
