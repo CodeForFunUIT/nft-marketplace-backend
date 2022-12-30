@@ -6,8 +6,6 @@
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
 B1: npm i
 B2: npm run dev
