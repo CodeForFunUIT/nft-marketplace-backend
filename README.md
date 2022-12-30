@@ -8,6 +8,11 @@
 
 ## Getting Started
 
+Add file config.env 
+```shell
+config/config.env
+```
+
 Install package module: 
 ```shell
 npm i
