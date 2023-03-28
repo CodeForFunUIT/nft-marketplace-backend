@@ -1,7 +1,7 @@
 import HttpMethodStatus from "../utility/static.js";
 import NFT from "../models/nft.js";
 import User from "../models/user.js";
-import statusNFT from "../utility/enum.js";
+import {sortByNFT, statusNFT} from "../utility/enum.js";
 
 export const addNFT = async (req, res)  => {
     try {
@@ -99,4 +99,51 @@ export const updateStatusToStock = async (req, res) => {
     }
 }
 
+export const filterMinMaxNFT = async(req,res) => {
+    try {
+        const {minPrice, maxPrice} = req.body
+    
+        const nfts = await NFT.find({});
+        const filterNFTs = nfts.filter((e) => {
+            if(e.price <= Number(maxPrice) && e.price >= Number(minPrice)){
+                return true;
+            }
+            return false;
+        });
+        return HttpMethodStatus.ok(res, 'get list min max NFT' ,filterNFTs);
+    } catch (error) {
+        return HttpMethodStatus.badRequest(res,error.message);
+    }
+}
+
+export const sortNFT = async(req, res) => {
+    try {
+        const {sortBy} = req.body
+        const nfts = await NFT.find({});
+        let filterNFTs = [];
+        switch(sortBy){
+            case sortByNFT.HIGHEST_PRICE:{
+                filterNFTs =  nfts.sort((a, b) => b.price - a.price);
+                break;
+            }
+            case sortByNFT.LOWEST_PRICE:{
+                filterNFTs =  nfts.sort((a, b) => a.price - b.price);
+                break;
+            }
+            case sortByNFT.RECENTLY_SOLD:{
+                
+            }
+            case sortByNFT.MOST_LIKED:{
+                
+            }
+            case sortByNFT.OLDEST:{
+                filterNFTs = nfts.sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+                break;
+            }
+        }
+        return HttpMethodStatus.ok(res, `get sort NFT by ${sortBy}` ,filterNFTs);
+    } catch (error) {
+        return HttpMethodStatus.badRequest(res,error.message);
+    }
+}
 
