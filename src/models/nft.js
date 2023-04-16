@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import statusNFT from "../utility/enum.js";
+import {statusNFT} from "../utility/enum.js";
 const nftSchema = new mongoose.Schema({
     tokenId: {
         type: Number,
@@ -9,10 +9,11 @@ const nftSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    addressOwner: {
-        type: String,
-        require: true,
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
     },
+    
     uri: {
         type: String,
     },
@@ -35,6 +36,10 @@ const nftSchema = new mongoose.Schema({
         type: String,
         default: "0xFf24e9Ce8D1c32f01B24bE7b1C9BED386D43c22F",
     },
+    favorite:{
+        type: Number,
+    },
+
 },
 {
     timestamps: {createdAt: 'created_at'}

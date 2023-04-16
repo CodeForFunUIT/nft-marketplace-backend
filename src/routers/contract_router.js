@@ -13,6 +13,7 @@ import {
     addOrderManual,
 } from '../controllers/contract_controller.js'
 import { authToken } from "../middleware/authorization.js";
+import { addAuctionOrder } from "../controllers/auction_controller.js";
 
 router.get('/addOrder', addOrder)
 router.post('/addOrderManual',addOrderManual)
@@ -23,5 +24,6 @@ router.get('/getEventAddOrders', getEventAddOrders)
 router.get('/getEventOrderMatch',getEventOrderMatch)
 router.post('/executeOrder', executeOrder)
 router.post('/cancelOrder',cancelOrder)
+router.post('/addAuctionOrder',addAuctionOrder)
 
 export default router

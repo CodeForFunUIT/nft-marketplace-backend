@@ -33,6 +33,10 @@ const eventOrderAdd = new mongoose.Schema({
     },
     status: {
         type: String,
+    },
+    auction: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Auction"
     }
 })
 

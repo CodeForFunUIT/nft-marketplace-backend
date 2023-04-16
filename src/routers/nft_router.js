@@ -8,9 +8,13 @@ import {
   updateUri,
   updateStatusToStock,
   filterMinMaxNFT,
-  sortNFT
+  sortNFT,
+  auctionNFT,
+  uploadImageNFT,
+  getNFTByTokenId,
 } from "../controllers/nft_controller.js";
 import { sortByNFT } from "../utility/enum.js";
+import upload from "../middleware/upload_image.js";
 
 router.post("/addNFT", addNFT)
 router.get("/getNFTs",getNFTs)
@@ -19,4 +23,7 @@ router.post("/updateUri",updateUri)
 router.post("/updateStatusToStock",updateStatusToStock)
 router.post("/filterMinMaxNFT",filterMinMaxNFT)
 router.post("/sortNFT",sortNFT)
+router.post("/auctionNFT",auctionNFT)
+router.post("/getNFTByTokenId",getNFTByTokenId)
+router.post("/uploadImageNFT", upload.array('images', 12), uploadImageNFT)
 export default router;
