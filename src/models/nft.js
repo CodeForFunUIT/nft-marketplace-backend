@@ -7,13 +7,18 @@ const nftSchema = new mongoose.Schema({
     },
     orderId: {
         type: Number,
-        default: 0
+    },
+    walletOwner:{
+        type: String,
     },
     owner: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
     },
-    
+    seller:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    },
     uri: {
         type: String,
     },

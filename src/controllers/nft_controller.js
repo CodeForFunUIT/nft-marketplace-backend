@@ -16,7 +16,7 @@ export const addNFT = async (req, res) => {
       return HttpMethodStatus.badRequest(res, "nft is exist");
     }
 
-    const user = await User.findOne({walletAddress: address})
+    const user = await User.findOne({walletAddress: data.seller.toLowerCase()})
 
     if(!user){
       return HttpMethodStatus.badRequest(res, "user not exist");
@@ -24,8 +24,10 @@ export const addNFT = async (req, res) => {
 
     const newNft = new NFT({
       tokenId: data.tokenId,
-      // orderID:
-      owner: user._id,
+      orderId: data.orderId,
+      seller: user._id,
+      // owner: user._id,
+      walletOwner: data.walletOwner.toLowerCase(),
       uri: data.uri,
       name: data.name,
       status: data.status,
@@ -44,7 +46,7 @@ export const addNFT = async (req, res) => {
 
     ///Save nft
     newNft.save((error, nft) => {
-      HttpMethodStatus.created(res, "create new NFT success!", nft);
+      return HttpMethodStatus.created(res, "create new NFT success!", nft);
     });
   } catch (error) {
     console.log(error);
@@ -53,7 +55,7 @@ export const addNFT = async (req, res) => {
 };
 
 export const getNFTs = async (req, res) => {
-  const nfts = await NFT.find({}).populate({path: 'owner', select: '_id name walletAddress'});
+  const nfts = await NFT.find({}).populate({path: 'seller', select: '_id name walletAddress'});
 
   HttpMethodStatus.ok(res, "get NFT success", nfts);
 };
@@ -61,7 +63,7 @@ export const getNFTs = async (req, res) => {
 export const getNFTByTokenId = async (req, res) => {
   try {
     const {tokenId} = req.params
-    const nft = await NFT.findOne({tokenId: tokenId}).populate({path: 'owner', select: '_id name walletAddress'});
+    const nft = await NFT.findOne({tokenId: tokenId}).populate({path: 'seller', select: '_id name walletAddress'});
     if(!nft){
       return HttpMethodStatus.badRequest(res, `NFT not exist with ${tokenId}`)
     }
