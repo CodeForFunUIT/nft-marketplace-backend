@@ -247,7 +247,7 @@ export const uploadImageNFT = async(req, res) => {
           const list = images.concat(
               await Promise.all(
                   req.files.map(async (e) => {
-                  const buffer = await Sharp(e.buffer).png().toBuffer()
+                  const buffer = await Sharp(e.buffer).toBuffer()
                   const image = await new Image({ data: buffer }).save();
                 return `https://nft-marketplace-backend-z4eu.vercel.app/image/${image._id}`;
               })
