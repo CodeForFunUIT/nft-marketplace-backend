@@ -253,7 +253,7 @@ export const uploadImageNFT = async(req, res) => {
                       height: 400
                   }).png().toBuffer()
                   const image = await new Image({ data: buffer }).save();
-                return `http://localhost:3000/image/${image._id}`;
+                return `https://nft-marketplace-backend-z4eu.vercel.app/image/${image._id}`;
               })
             )
           )
