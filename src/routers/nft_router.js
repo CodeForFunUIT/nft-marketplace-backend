@@ -24,6 +24,6 @@ router.post("/updateStatusToStock",updateStatusToStock)
 router.post("/filterMinMaxNFT",filterMinMaxNFT)
 router.post("/sortNFT",sortNFT)
 router.post("/auctionNFT",auctionNFT)
-router.post("/getNFTByTokenId",getNFTByTokenId)
+router.get("/getNFTByTokenId/:tokenId",getNFTByTokenId)
 router.post("/uploadImageNFT", upload.array('images', 12), uploadImageNFT)
 export default router;

@@ -60,7 +60,7 @@ export const getNFTs = async (req, res) => {
 
 export const getNFTByTokenId = async (req, res) => {
   try {
-    const {tokenId} = req.body
+    const {tokenId} = req.params
     const nft = await NFT.findOne({tokenId: tokenId}).populate({path: 'owner', select: '_id name walletAddress'});
     if(!nft){
       return HttpMethodStatus.badRequest(res, `NFT not exist with ${tokenId}`)
