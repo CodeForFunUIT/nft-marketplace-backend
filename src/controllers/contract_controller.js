@@ -34,6 +34,7 @@ export const addOrder = async (req, res) => {
           price: eventMarketPlace[newIndex].args[4],
           status: statusNFT.SELLING,
           orderId: eventMarketPlace[newIndex].args[0],
+          walletOwner: "0x9b8ce88feac9ca68ab3f5c393177d83134b6c00c"
         },
       }
     ).exec();
