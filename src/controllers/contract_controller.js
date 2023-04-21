@@ -337,9 +337,19 @@ export const cancelOrder = async (req, res) => {
 
     await EventOrderAdd.findOneAndDelete({ orderId: orderId });
 
+    const nft = await NFT.findOneAndUpdate(
+      { tokenId: order.tokenId },
+      { status: statusNFT.ONSTOCK}
+    );
+
+    const user = await User.findById(nft.seller._id);
+    if(!user){
+      return HttpMethodStatus.badRequest(res, "user not exist")
+    }
     await NFT.findOneAndUpdate(
       { tokenId: order.tokenId },
-      { status: statusNFT.ONSTOCK }
+      { status: statusNFT.ONSTOCK,
+        walletOwner:  user.walletAddress}
     );
 
     const orders = await EventOrderAdd.find({});
