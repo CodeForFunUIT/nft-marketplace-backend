@@ -5,6 +5,10 @@ const eventOrderAdd = new mongoose.Schema({
         type: String,
         required: true,
     },
+    nft: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "NFT"
+    },
     orderId: {
         type: Number,
         required: true,

@@ -5,7 +5,7 @@ import ethers from "ethers";
 import User from "../models/user.js";
 import NFT from "../models/nft.js";
 import { statusNFT } from "../utility/enum.js";
-import { contractMarketPlace} from "../utility/contract.js";
+import { contractMarketPlace } from "../utility/contract.js";
 import schedule from "node-schedule";
 import { utcToZonedTime } from "date-fns-tz";
 import { vietnamTimezone } from "../utility/vietnam_timezone.js";
@@ -42,6 +42,7 @@ export const addOrder = async (req, res) => {
     const newEventOrderAdd = new EventOrderAdd({
       transactionHash: eventMarketPlace[newIndex].transactionHash,
       orderId: eventMarketPlace[newIndex].args[0],
+      nft: nft._id,
       seller: eventMarketPlace[newIndex].args[1].toLowerCase(),
       // buyer :eventMarketPlace[newIndex].args[2],
       tokenId: eventMarketPlace[newIndex].args[2],
@@ -92,6 +93,7 @@ export const addOrderManual = async (req, res) => {
       orderId: data.orderId,
       seller: data.seller.toLowerCase(),
       // buyer :eventMarketPlace[newIndex].args[2],
+      nft: nft._id,
       tokenId: data.tokenId,
       paymentToken: data.paymentToken,
       price: data.price,
@@ -189,7 +191,34 @@ export const getOrdersFromBlochain = async (req, res) => {
 
 /// lấy order từ mongodb
 export const getOrdersFromMongo = async (req, res) => {
-  const orders = await EventOrderAdd.find({});
+  // const orders = await EventOrderAdd.find({}).populate({ path: 'nft', select: '_id tokenId name uri walletOwner seller' }).populate({
+  //   path: 'nft.seller', populate: {
+  //     path: 'seller',
+  //     model: 'User'
+  //   }
+  // }).exec(function (err, orders) {
+  //   if (err) {
+  //     console.log(err);
+  //   } else {
+  //     console.log(orders);
+  //   }
+  // });
+  const orders = await EventOrderAdd.find({})
+  .populate({ 
+    path: 'nft', 
+    select: '_id tokenId name uri walletOwner seller',
+    populate: {
+      path: 'seller',
+      select: '_id name walletAddress'
+    } 
+  })
+  // .exec(function(err, orders) {
+  //   if (err) {
+  //     console.log(err);
+  //   } else {
+  //     console.log(orders);
+  //   }
+  // });
   return HttpMethodStatus.ok(res, "list order from mongodb", orders);
 };
 
@@ -340,17 +369,19 @@ export const cancelOrder = async (req, res) => {
 
     const nft = await NFT.findOneAndUpdate(
       { tokenId: order.tokenId },
-      { status: statusNFT.ONSTOCK}
+      { status: statusNFT.ONSTOCK }
     );
 
     const user = await User.findById(nft.seller._id);
-    if(!user){
+    if (!user) {
       return HttpMethodStatus.badRequest(res, "user not exist")
     }
     await NFT.findOneAndUpdate(
       { tokenId: order.tokenId },
-      { status: statusNFT.ONSTOCK,
-        walletOwner:  user.walletAddress}
+      {
+        status: statusNFT.ONSTOCK,
+        walletOwner: user.walletAddress
+      }
     );
 
     const orders = await EventOrderAdd.find({});
