@@ -2,37 +2,69 @@ import HttpMethodStatus from "../utility/static.js";
 import NFT from "../models/nft.js";
 import User from "../models/user.js";
 import { sortByNFT, statusNFT } from "../utility/enum.js";
-import {vietnamTimezone} from "../utility/vietnam_timezone.js";
+import { vietnamTimezone } from "../utility/vietnam_timezone.js";
 import { utcToZonedTime } from "date-fns-tz";
 import Auction from "../models/auction.js";
 import Image from "../models/image.js";
 import Sharp from "sharp";
+import formidable from "formidable";
+import fs from "fs";
 
 export const addNFT = async (req, res) => {
   try {
-    const data = req.body;
-    const isNftExist = await NFT.findOne({ tokenId: data.tokenId });
-    if (isNftExist) {
-      return HttpMethodStatus.badRequest(res, "nft is exist");
-    }
+    const form = new formidable.IncomingForm({ multiples: true });
 
-    const user = await User.findOne({walletAddress: data.seller.toLowerCase()})
+    form.parse(req, async (err, fields, files)  => {
+      if (err) {
+        return HttpMethodStatus.badRequest(res, err.message);
+      }
+      const tokenId = fields.tokenId;
+      const orderId = fields.orderId;
+      const seller = fields.seller.toLowerCase()
+      const walletOwner = fields.walletOwner.toLowerCase()
+      const name = fields.name;
+      const status = fields.status;
+      const price = fields.price;
+      const oldPath = files.images.filepath;
 
-    if(!user){
-      return HttpMethodStatus.badRequest(res, "user not exist");
-    }
-
-    const newNft = new NFT({
-      tokenId: data.tokenId,
-      orderId: data.orderId,
-      seller: user._id,
-      // owner: user._id,
-      walletOwner: data.walletOwner.toLowerCase(),
-      uri: data.uri,
-      name: data.name,
-      status: data.status,
-      // chain: ,
-      price: data.price,
+      fs.readFile(oldPath, async (err, data) => {
+        if (err) {
+          return HttpMethodStatus.badRequest(res, err.message);
+        }
+        const image = new Image({ data });
+        await image.save(async (err, result) => {
+          if (err) {
+            return HttpMethodStatus.badRequest(res, err.message);
+          }
+        });
+        
+        const isNftExist = await NFT.findOne({ tokenId: tokenId });
+        if (isNftExist) {
+          return HttpMethodStatus.badRequest(res, "nft is exist");
+        }
+    
+        const user = await User.findOne({walletAddress: seller})
+    
+        if(!user){
+          return HttpMethodStatus.badRequest(res, "user not exist");
+        }
+    
+        const newNft = new NFT({
+          tokenId: tokenId,
+          orderId: orderId,
+          seller: user._id,
+          status: status,
+          walletOwner: walletOwner,
+          uri: `https://nft-marketplace-backend-z4eu.vercel.app/image/${image._id}` ,
+          name: name,
+          status: status,
+          price: price,
+        });
+        ///Save nft
+        newNft.save((error, nft) => {
+          return HttpMethodStatus.created(res, "create new NFT success!", nft);
+        });
+      })
     });
 
     // const user = await User.findOneAndUpdate(
@@ -44,35 +76,35 @@ export const addNFT = async (req, res) => {
     //   return HttpMethodStatus.badRequest(res, "user not exist");
     // }
 
-    ///Save nft
-    newNft.save((error, nft) => {
-      return HttpMethodStatus.created(res, "create new NFT success!", nft);
-    });
   } catch (error) {
-    console.log(error);
-    HttpMethodStatus.internalServerError(res, error.message);
+    return HttpMethodStatus.internalServerError(res, error.message);
   }
 };
 
 export const getNFTs = async (req, res) => {
-  const nfts = await NFT.find({}).populate({path: 'seller', select: '_id name walletAddress'});
+  const nfts = await NFT.find({}).populate({
+    path: "seller",
+    select: "_id name walletAddress",
+  });
 
   HttpMethodStatus.ok(res, "get NFT success", nfts);
 };
 
 export const getNFTByTokenId = async (req, res) => {
   try {
-    const {tokenId} = req.params
-    const nft = await NFT.findOne({tokenId: tokenId}).populate({path: 'seller', select: '_id name walletAddress'});
-    if(!nft){
-      return HttpMethodStatus.badRequest(res, `NFT not exist with ${tokenId}`)
+    const { tokenId } = req.params;
+    const nft = await NFT.findOne({ tokenId: tokenId }).populate({
+      path: "seller",
+      select: "_id name walletAddress",
+    });
+    if (!nft) {
+      return HttpMethodStatus.badRequest(res, `NFT not exist with ${tokenId}`);
     }
-    return HttpMethodStatus.ok(res, `get NFT with ${tokenId}`, nft)
+    return HttpMethodStatus.ok(res, `get NFT with ${tokenId}`, nft);
   } catch (error) {
-    return HttpMethodStatus.badRequest(res, error.message)
+    return HttpMethodStatus.badRequest(res, error.message);
   }
-}
-
+};
 
 export const updateOwner = async (req, res) => {
   try {
@@ -80,16 +112,16 @@ export const updateOwner = async (req, res) => {
 
     const user = await User.findById(data.id);
 
-    if(!user){
+    if (!user) {
       return HttpMethodStatus.badRequest(res, "user not exist");
     }
 
     const nft = await NFT.findOneAndUpdate(
       { tokenId: data.tokenId },
       // { addressOwner: data.addressOwner.toLowerCase() },
-      {owner: user._id},
-      {new: true }
-    ).populate({path: 'owner', select: '_id name walletAddress'});
+      { owner: user._id },
+      { new: true }
+    ).populate({ path: "owner", select: "_id name walletAddress" });
 
     if (!nft) {
       return HttpMethodStatus.badRequest(res, "nft not exist");
@@ -149,7 +181,10 @@ export const filterMinMaxNFT = async (req, res) => {
   try {
     const { minPrice, maxPrice } = req.body;
 
-    const nfts = await NFT.find({}).populate({path: 'owner', select: '_id name walletAddress'});
+    const nfts = await NFT.find({}).populate({
+      path: "owner",
+      select: "_id name walletAddress",
+    });
     const filterNFTs = nfts.filter((e) => {
       if (e.price <= Number(maxPrice) && e.price >= Number(minPrice)) {
         return true;
@@ -165,7 +200,10 @@ export const filterMinMaxNFT = async (req, res) => {
 export const sortNFT = async (req, res) => {
   try {
     const { sortBy } = req.body;
-    const nfts = await NFT.find({}).populate({path: 'owner', select: '_id name walletAddress'});
+    const nfts = await NFT.find({}).populate({
+      path: "owner",
+      select: "_id name walletAddress",
+    });
     let filterNFTs = [];
     switch (sortBy) {
       case sortByNFT.HIGHEST_PRICE: {
@@ -196,38 +234,55 @@ export const sortNFT = async (req, res) => {
 export const auctionNFT = async (req, res) => {
   try {
     const data = req.body;
-    const walletAddress = data.walletAddress.toLowerCase()
-    const currentDate =  utcToZonedTime( new Date(),vietnamTimezone) 
-    const timestampNow = currentDate.getTime()
+    const walletAddress = data.walletAddress.toLowerCase();
+    const currentDate = utcToZonedTime(new Date(), vietnamTimezone);
+    const timestampNow = currentDate.getTime();
 
-    const nftAuction = await NFT.findOne({tokenId: data.tokenId})
+    const nftAuction = await NFT.findOne({ tokenId: data.tokenId });
 
     const auction = await Auction.findOne({ nft: nftAuction._id });
 
-    if(!auction){
-      return HttpMethodStatus.badRequest(res, "auction note exist")
+    if (!auction) {
+      return HttpMethodStatus.badRequest(res, "auction note exist");
     }
 
-    if(timestampNow >= auction.endAuction){
+    if (timestampNow >= auction.endAuction) {
       return HttpMethodStatus.badRequest(res, "auction was ended");
     }
 
-    if(data.price < auction.minPrice){
-      return HttpMethodStatus.badRequest(res, `minimum price is ${auction.minPrice}`);  
+    if (data.price < auction.minPrice) {
+      return HttpMethodStatus.badRequest(
+        res,
+        `minimum price is ${auction.minPrice}`
+      );
     }
-    if(auction.listAuction.length !== 0 && 
-      data.price < auction.listAuction[auction.listAuction.length - 1]){
-      return HttpMethodStatus.badRequest(res, 'new price must not small than previous price');  
+    if (
+      auction.listAuction.length !== 0 &&
+      data.price < auction.listAuction[auction.listAuction.length - 1]
+    ) {
+      return HttpMethodStatus.badRequest(
+        res,
+        "new price must not small than previous price"
+      );
     }
     const updateAuction = await Auction.findByIdAndUpdate(
       auction._id,
       {
         $push: {
-          listAuction: {"walletAddress": walletAddress, "price": data.price,"time": timestampNow},
+          listAuction: {
+            walletAddress: walletAddress,
+            price: data.price,
+            time: timestampNow,
+          },
         },
       },
       { new: true }
-    ).exec().populate({path: "nft", select: "_id tokenId orderId owner uri name price favorite"});
+    )
+      .exec()
+      .populate({
+        path: "nft",
+        select: "_id tokenId orderId owner uri name price favorite",
+      });
     return HttpMethodStatus.ok(
       res,
       `auction success by ${walletAddress}`,
@@ -238,49 +293,31 @@ export const auctionNFT = async (req, res) => {
   }
 };
 
-export const uploadImageNFT = async(req, res) => {
+export const uploadImageNFT = async (req, res) => {
   // const {price, name, introduction, category, tag} = req.body
-  let images = []
-  console.log(req.files)
-  try{
-      if(req.files){
-          const list = images.concat(
-              await Promise.all(
-                  req.files.map(async (e) => {
-                  const buffer = await Sharp(e.buffer).toBuffer()
-                  const image = await new Image({ data: buffer }).save();
-                return `https://nft-marketplace-backend-z4eu.vercel.app/image/${image._id}`;
-              })
-            )
-          )
-          images = [...list]
-      }
-      else{
-          return res.status(400).send({msg: 'please upload image'})
-      }
-      
-      // const newProct = new Product({
-      //     images,
-      //     price,
-      //     tag,
-      //     name,
-      //     introduction,
-      //     category,
-      //   });
-      // await newProct.save()
-      // return res.send({msg: 'upload image success'})
-      return HttpMethodStatus.ok(res, "upload image success", images)
+  let images = [];
+  try {
+    if (req.files) {
+      const list = images.concat(
+        await Promise.all(
+          req.files.map(async (e) => {
+            const buffer = await Sharp(e.buffer).toBuffer();
+            const image = await new Image({ data: buffer }).save();
+            return `https://nft-marketplace-backend-z4eu.vercel.app/image/${image._id}`;
+          })
+        )
+      );
+      images = [...list];
+    } else {
+      return res.status(400).send({ msg: "please upload image" });
+    }
 
-  }catch(e){
-      // res.status(400).send(e.toString())
-      return HttpMethodStatus.badRequest(res, e.message)
+    return HttpMethodStatus.ok(res, "upload image success", images);
+  } catch (e) {
+    return HttpMethodStatus.badRequest(res, e.message);
   }
-}
+};
 export const uploadGifNFT = async (req, res) => {
   try {
-    
-  } catch (error) {
-    
-  }
-}
-
+  } catch (error) {}
+};

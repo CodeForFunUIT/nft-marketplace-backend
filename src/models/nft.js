@@ -28,7 +28,6 @@ const nftSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        default: statusNFT.ONSTOCK
     },
     chain: {
         type: String,
