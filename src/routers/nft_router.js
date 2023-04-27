@@ -12,6 +12,7 @@ import {
   auctionNFT,
   uploadImageNFT,
   getNFTByTokenId,
+  addNFTtest,
 } from "../controllers/nft_controller.js";
 import { sortByNFT } from "../utility/enum.js";
 import upload from "../middleware/upload_image.js";
@@ -26,4 +27,5 @@ router.post("/sortNFT",sortNFT)
 router.post("/auctionNFT",auctionNFT)
 router.get("/getNFTByTokenId/:tokenId",getNFTByTokenId)
 router.post("/uploadImageNFT", upload.array('images', 12), uploadImageNFT)
+router.post("/addNFTtest",addNFTtest)
 export default router;

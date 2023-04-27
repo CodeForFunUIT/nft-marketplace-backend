@@ -81,6 +81,56 @@ export const addNFT = async (req, res) => {
   }
 };
 
+export const addNFTtest = async (req, res) => {
+  try {
+    const form = new formidable.IncomingForm({ multiples: true });
+
+    form.parse(req, async (err, fields, files)  => {
+      if (err) {
+        return HttpMethodStatus.badRequest(res, err.message);
+      }
+      const tokenId = fields.tokenId;
+      const orderId = fields.orderId;
+      const seller = fields.seller.toLowerCase()
+      const walletOwner = fields.walletOwner.toLowerCase()
+      const name = fields.name;
+      const status = fields.status;
+      const price = fields.price;
+      // const oldPath = files.images.filepath;
+
+      const isNftExist = await NFT.findOne({ tokenId: tokenId });
+      if (isNftExist) {
+        return HttpMethodStatus.badRequest(res, "nft is exist");
+      }
+  
+      const user = await User.findOne({walletAddress: seller})
+  
+      if(!user){
+        return HttpMethodStatus.badRequest(res, "user not exist");
+      }
+  
+      const newNft = new NFT({
+        tokenId: tokenId,
+        orderId: orderId,
+        seller: user._id,
+        status: status,
+        walletOwner: walletOwner,
+        name: name,
+        status: status,
+        price: price,
+      });
+      ///Save nft
+      newNft.save((error, nft) => {
+        return HttpMethodStatus.created(res, "create new NFT success!", nft);
+      });
+
+    });
+  } catch (error) {
+    return HttpMethodStatus.internalServerError(res, error.message);
+  }
+};
+
+
 export const getNFTs = async (req, res) => {
   const nfts = await NFT.find({}).populate({
     path: "seller",
