@@ -209,13 +209,27 @@ export const getWishListNFT = async (req, res) => {
         const {walletAddress} = req.body
 
         const user = await User.findOne({walletAddress: walletAddress})
-        .populate({path: "wishList", select: "_id tokenId orderId addressOwner uri name status price"});
-      
-        if(!user){
-            return HttpMethodStatus.badRequest(res, "user not exist")
-        }
+        .populate({path: "wishList", select: "_id tokenId orderId addressOwner uri name status price seller"})
+        .exec((err, user) => {
+            if(err){
+                return HttpMethodStatus.badRequest(res, err.message);
+            }
+            if(!user){
+                return HttpMethodStatus.badRequest(res, "user not exist")
+            }
+    
+    
+            NFT.populate(user.wishList, { path: 'seller',select: "_id name walletAddress" }, function(err, wishList) {
+                if (err) {
+                    console.log(err);
+                } else {
+                    return HttpMethodStatus.ok(res, `get wish list NFT's ${walletAddress} success`, wishList)        
+;
+                }
+            });
+            
+        })
 
-        return HttpMethodStatus.ok(res, `get wish list NFT's ${walletAddress} success`, user)        
 
     } catch (error) {
         return HttpMethodStatus.badRequest(res, error.message)       
