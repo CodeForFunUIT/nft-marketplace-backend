@@ -60,21 +60,17 @@ export const addNFT = async (req, res) => {
           status: status,
           price: price,
         });
+
         ///Save nft
-        newNft.save((error, nft) => {
+        newNft.save(async (error, nft) => {
+          if(error){
+            return HttpMethodStatus.badRequest(res, `error in save NFT ${error.message}`)
+          }
+          await user.updateOne({$addToSet: {listNFT: nft._id}});
           return HttpMethodStatus.created(res, "create new NFT success!", nft);
         });
       })
     });
-
-    // const user = await User.findOneAndUpdate(
-    //   { walletAddress: data.addressOwner.toLowerCase() },
-    //   { $addToSet: { listNFT: data.tokenId } }
-    // );
-
-    // if (!user) {
-    //   return HttpMethodStatus.badRequest(res, "user not exist");
-    // }
 
   } catch (error) {
     return HttpMethodStatus.internalServerError(res, error.message);

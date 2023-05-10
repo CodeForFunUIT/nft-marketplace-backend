@@ -159,13 +159,17 @@ export const getOrdersFromBlochain = async (req, res) => {
   let listOrderAdd = orderAdds.map((e) => {
     return {
       orderId: Number(e.args[0]._hex),
+      seller: e.args[1].toLowerCase(),
       tokenId: Number(e.args[2]._hex),
+      price: Number(e.args[4]._hex)
     };
   });
   let listOrderMatch = orderMatchs.map((e) => {
     return {
       orderId: Number(e.args[0]._hex),
+      seller: e.args[1].toLowerCase(),
       tokenId: Number(e.args[2]._hex),
+      price: Number(e.args[4]._hex)
     };
   });
   let listOrderCancel = orderCancel.map((e) => {
@@ -189,20 +193,93 @@ export const getOrdersFromBlochain = async (req, res) => {
   return HttpMethodStatus.ok(res, "list order from blochain", listOrderAdd);
 };
 
+/// lấy order từ blochain
+export const addOrdersFromBlochainToMongo = async (req, res) => {
+  const orderAdds = await contractMarketPlace.queryFilter("OrderAdded");
+  const orderMatchs = await contractMarketPlace.queryFilter("OrderMatched");
+  const orderCancel = await contractMarketPlace.queryFilter("OrderCancelled");
+  let listOrderAdd = orderAdds.map((e) => {
+    return {
+      transactionHash: e.transactionHash,
+      orderId: Number(e.args[0]._hex),
+      seller: e.args[1].toLowerCase(),
+      tokenId: Number(e.args[2]._hex),
+      paymentToken: e.args[3],
+      price: Number(e.args[4]._hex)
+    };
+  });
+  let listOrderMatch = orderMatchs.map((e) => {
+    return {
+      transactionHash: e.transactionHash,
+      orderId: Number(e.args[0]._hex),
+      seller: e.args[1].toLowerCase(),
+      tokenId: Number(e.args[2]._hex),
+      paymentToken: e.args[3],
+      price: Number(e.args[4]._hex)
+    };
+  });
+  let listOrderCancel = orderCancel.map((e) => {
+    return {
+      orderId: Number(e.args[0]._hex),
+    };
+  });
+  listOrderCancel.forEach((cancel) => removeItemOnce(listOrderAdd, cancel));
+  listOrderMatch.forEach((match) => removeItemOnce(listOrderAdd, match));
+
+  function removeItemOnce(arr, value) {
+    let index = 0;
+    arr.forEach((a) => {
+      if (a["orderId"] === value["orderId"]) {
+        arr.splice(index, 1);
+        return;
+      } else index++;
+    });
+  }
+
+  let promises = listOrderAdd.map(async (order) => {
+    const nft = await NFT.findOne({tokenId: order.tokenId})
+    if(!nft){
+      throw(`nft not exist with tokenId: ${nft.tokenId}`);
+    }
+    
+    const orderAdd = await EventOrderAdd.findOne({orderId: order.orderId})
+    console.log(`orderId ${nft.orderId}`);
+    console.log(`orderAdd: ${orderAdd}`)
+
+    if(!orderAdd){
+      console.log();
+      const newEventOrderAdd = new EventOrderAdd({
+        transactionHash: order.transactionHash,
+        orderId: order.orderId,
+        seller: order.seller.toLowerCase(),
+        // buyer :eventMarketPlace[newIndex].args[2],
+        nft: nft._id,
+        tokenId: order.tokenId,
+        paymentToken: order.paymentToken,
+        price: order.price,
+        status: statusNFT.SELLING,
+        name: nft.name,
+        uri: nft.uri,
+      });
+        ///Save event
+      await newEventOrderAdd.save((error, data) => {
+        if (error) {
+          return HttpMethodStatus.badRequest(res, error.message);
+        }
+      });
+      return newEventOrderAdd;
+    }
+    return orderAdd;
+  });
+  
+  Promise.all(promises).then(function(results) {
+    console.log('forEach đã hoàn thành');
+    console.log(results);
+  });
+};
+
 /// lấy order từ mongodb
 export const getOrdersFromMongo = async (req, res) => {
-  // const orders = await EventOrderAdd.find({}).populate({ path: 'nft', select: '_id tokenId name uri walletOwner seller' }).populate({
-  //   path: 'nft.seller', populate: {
-  //     path: 'seller',
-  //     model: 'User'
-  //   }
-  // }).exec(function (err, orders) {
-  //   if (err) {
-  //     console.log(err);
-  //   } else {
-  //     console.log(orders);
-  //   }
-  // });
   const orders = await EventOrderAdd.find({})
   .populate({ 
     path: 'nft', 
@@ -212,13 +289,6 @@ export const getOrdersFromMongo = async (req, res) => {
       select: '_id name walletAddress'
     } 
   })
-  // .exec(function(err, orders) {
-  //   if (err) {
-  //     console.log(err);
-  //   } else {
-  //     console.log(orders);
-  //   }
-  // });
   return HttpMethodStatus.ok(res, "list order from mongodb", orders);
 };
 

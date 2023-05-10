@@ -29,26 +29,21 @@ export const getUserByAddressOwner = async (req, res) => {
         return HttpMethodStatus.badRequest(res, error.message);
     }
 };
-/// TODO not use
 export const getNFTUserFromMongo = async (req, res) => {
     try {
         const { address } = req.body;
 
-        var listNFt = [];
-
-        const users = await User.findOne({ walletAddress: address.toLowerCase() });
-
-        if (!users) {
+        const user = await User.findOne({ walletAddress: address.toLowerCase() });
+        if (!user) {
             return HttpMethodStatus.badRequest(res, "User not exist");
         }
+        const listNFT = await NFT.find({ seller: user._id }).select(
+          "_id tokenId orderId addressOwner uri name status price seller"
+        ).populate({path: 'seller', select: "_id walletAddress name"});
+    
+        user.listNFT = listNFT;
+        return HttpMethodStatus.ok(res, "execute success!", user.listNFT);
 
-        for (let id of users.listNFT) {
-            const nft = await NFT.findOne({ tokenId: id });
-
-            listNFt.push(nft);
-        }
-
-        return HttpMethodStatus.ok(res, "list NFT", listNFt);
     } catch (error) {
         return HttpMethodStatus.badRequest(res, error.message);
     }
@@ -122,9 +117,14 @@ export const addTokenId = async (req, res) => {
     try {
         const { address, tokenId } = req.body;
 
+        const nft = await NFT.findOne({tokenId: tokenId})
+        if(!nft){
+            return HttpMethodStatus.badRequest(res, `token id not exist: ${tokenId} `)
+        }
+
         const user = await User.findOneAndUpdate(
             { walletAddress: address.toLowerCase() },
-            { $addToSet: { listNFT: tokenId } },
+            { $addToSet: { listNFT: nft._id } },
             { new: true }
         ).exec();
 

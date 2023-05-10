@@ -23,12 +23,10 @@ const userSchema = new mongoose.Schema({
       type: String,
       default: "unnamed"
     },
-    wishList:[
-      {
+    wishList:[{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'NFT'
-      }
-    ]
+    }],
 })
 
 userSchema.methods.toJSON = function () {
