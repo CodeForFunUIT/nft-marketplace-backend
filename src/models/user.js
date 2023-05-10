@@ -27,6 +27,9 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'NFT'
     }],
+    uri:{
+      type: String,
+    }
 })
 
 userSchema.methods.toJSON = function () {

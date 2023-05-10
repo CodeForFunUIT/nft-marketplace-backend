@@ -2,6 +2,8 @@ import HttpMethodStatus from "../utility/static.js";
 import User from "../models/user.js";
 import NFT from "../models/nft.js";
 import Auction from "../models/auction.js";
+import Activity from "../models/activity.js";
+import {activityType} from "../utility/enum.js";
 
 export const getAllUser = async (req, res) => {
     const users = await User.find({}).populate("listNFT");
@@ -175,6 +177,19 @@ export const likeNFT = async (req, res) =>{
       if(!user){
         return HttpMethodStatus.badRequest(res, "user not exist")
       }
+
+      const activity = new Activity({
+        nft: nft._id,
+        interactiveUser: user._id,
+        user: nft.seller,
+        type: activityType.LIKE_NFT,
+      });
+
+      await activity.save((err, activity) => {
+        if(err){
+            return HttpMethodStatus.badRequest(res, `error on save activity`)
+        }
+      });
       
       return HttpMethodStatus.ok(res, `like nft with tokenId: ${tokenId}`, user)
     } catch (error) {
@@ -209,7 +224,7 @@ export const getWishListNFT = async (req, res) => {
         const {walletAddress} = req.body
 
         const user = await User.findOne({walletAddress: walletAddress})
-        .populate({path: "wishList", select: "_id tokenId orderId addressOwner uri name status price seller"})
+        .populate({path: "wishList", })
         .exec((err, user) => {
             if(err){
                 return HttpMethodStatus.badRequest(res, err.message);
@@ -218,13 +233,11 @@ export const getWishListNFT = async (req, res) => {
                 return HttpMethodStatus.badRequest(res, "user not exist")
             }
     
-    
-            NFT.populate(user.wishList, { path: 'seller',select: "_id name walletAddress" }, function(err, wishList) {
+            NFT.populate(user.wishList, { path: 'seller', select: '_id name walletAddress' }, function(err, wishList) {
                 if (err) {
                     console.log(err);
                 } else {
-                    return HttpMethodStatus.ok(res, `get wish list NFT's ${walletAddress} success`, wishList)        
-;
+                    return HttpMethodStatus.ok(res, `get wish list NFT's ${walletAddress} success`, wishList);
                 }
             });
             
@@ -234,4 +247,8 @@ export const getWishListNFT = async (req, res) => {
     } catch (error) {
         return HttpMethodStatus.badRequest(res, error.message)       
     }
+}
+
+export const updateUri = async () => {
+
 }

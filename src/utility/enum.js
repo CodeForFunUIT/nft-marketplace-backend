@@ -4,6 +4,11 @@ const statusNFT = {
     AUCTION: 'auction',
 }
 
+const activityType = {
+    LIKE_NFT: 'likeNFT',
+    AUCTION_NFT: 'auctionNFT',
+}
+
 const event = {
     ADD_ORDER: 'OrderAdded',
     CANCEL_ORDER: 'OrderCancelled',
@@ -19,4 +24,4 @@ const sortByNFT = {
     OLDEST:"Oldest"
 }
 
-export  {statusNFT, event,sortByNFT};
+export  {statusNFT, event,sortByNFT, activityType};

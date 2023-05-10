@@ -7,6 +7,7 @@ import contractRouter from "./routers/contract_router.js"
 import userRouter from "./routers/user_router.js"
 import nftRouter from "./routers/nft_router.js"
 import imageRouter from "./routers/image_router.js"
+import activityRouter from "./routers/activity_router.js"
 import Jwt  from "jsonwebtoken";
 import {authToken} from "./middleware/authorization.js";
 import cors from "cors";
@@ -157,6 +158,7 @@ io.on('connection', (socket) => {
   app.use("/user", userRouter)
   app.use("/nft", nftRouter)
   app.use("/image",imageRouter)
+  app.use("/activity",activityRouter)
 
   app.get('/books',authToken, (req, res) => {
     res.json({status: 'Success', data: books})
