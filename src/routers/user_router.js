@@ -14,7 +14,8 @@ import {
   getWinnerAuction,
   likeNFT,
   dislikeNFT,
-  getWishListNFT
+  getWishListNFT,
+  updateUri
 } from "../controllers/user_controller.js";
 
 router.get("/getUsers",getAllUser)
@@ -29,5 +30,5 @@ router.post("/removeTokenId",removeTokenId)
 router.post("/changeName",changeName)
 router.post("/likeNFT", likeNFT)
 router.post("/dislikeNFT", dislikeNFT)
-
+router.post("/updateUri", updateUri)
 export default router;
