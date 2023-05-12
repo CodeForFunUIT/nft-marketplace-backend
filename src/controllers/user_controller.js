@@ -223,7 +223,7 @@ export const getWishListNFT = async (req, res) => {
     try {
         const {walletAddress} = req.body
 
-        const user = await User.findOne({walletAddress: walletAddress})
+        const user = await User.findOne({walletAddress: walletAddress.toLowerCase()})
         .populate({path: "wishList", })
         .exec((err, user) => {
             if(err){
