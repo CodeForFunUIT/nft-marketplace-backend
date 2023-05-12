@@ -70,7 +70,7 @@ export const changeName = async (req, res) => {
     try {
         const { address,name } = req.body;
 
-        const user = await User.findOneAndUpdate({walletAddress: address},{ name: name },{new: true});
+        const user = await User.findOneAndUpdate({walletAddress: address.toLowerCase()},{ name: name },{new: true});
         if (!user) {
             return HttpMethodStatus.badRequest(res, "User not exist");
         }
