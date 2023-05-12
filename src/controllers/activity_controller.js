@@ -8,7 +8,7 @@ export const activityLikedByOther = async (req, res) => {
   try {
     const {walletAddress} = req.body
 
-    const user = await User.findOne({walletAddress: walletAddress})
+    const user = await User.findOne({walletAddress: walletAddress.toLowerCase()})
 
     if(!user){
         return HttpMethodStatus.badRequest(res, 'user not exist')
