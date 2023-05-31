@@ -49,11 +49,6 @@ export const activityLikedByOther = async (req, res) => {
 export const activityTransaction = async (req, res) => {
   try {
     const { walletAddress } = req.body
-    const transactions = await Transaction.find({});
-
-    if (transactions && transactions.length > 0) {
-      return HttpMethodStatus.ok(res, `already have transactions`, transactions)
-    }
     const history = await etherscanProvider.getHistory(walletAddress);
     let promises = [];
     for (const tx of history) {
@@ -71,21 +66,25 @@ export const activityTransaction = async (req, res) => {
                   data: tx.data,
                   timestamp: tx.timestamp,
                   method: res.data.split('(')[0],
-                  blockNumber: tx.blockNumber
+                  blockNumber: tx.blockNumber,
+                  hash: tx.hash,
                 })
-                transaction.save((error, data) => {
-                  if (error) {
-                    return HttpMethodStatus.badRequest(res, `error on save transaction ${error.message}`)
-                  } if (data) {
-                    resolve(data)
-                  }
-                })
+                resolve(transaction)
+
+                // transaction.save((error, data) => {
+                //   if (error) {
+                //     return HttpMethodStatus.badRequest(res, `error on save transaction ${error.message}`)
+                //   } if (data) {
+                //     resolve(data)
+                //   }
+                // })
               }
             }
           ).catch(error => {
             // console.log(tx.blockNumber)
             // console.log('error');
             const transaction = new Transaction({
+              hash: tx.hash,
               value: ethers.utils.formatEther(tx.value),
               from: tx.from,
               to: tx.to,
@@ -94,24 +93,25 @@ export const activityTransaction = async (req, res) => {
               method: "transfer",
               blockNumber: tx.blockNumber
             })
-            transaction.save((error, data) => {
-              if (error) {
-                return HttpMethodStatus.badRequest(res, `error on save transaction ${error.message}`)
-              } if (data) {
-                resolve(data)
-              }
-            })
+            resolve(transaction)
+            // transaction.save((error, data) => {
+            //   if (error) {
+            //     return HttpMethodStatus.badRequest(res, `error on save transaction ${error.message}`)
+            //   } if (data) {
+            //     resolve(data)
+            //   }
+            // })
 
           });
         }
       ))
     }
-    await Promise.all(promises)
+    const transactions = await Promise.all(promises)
 
-    const saveTransactions = await Transaction.find({});
+    // const saveTransactions = await Transaction.find({});
 
-    if (saveTransactions) {
-      return HttpMethodStatus.ok(res, `save transactions success`, saveTransactions)
+    if (transactions) {
+      return HttpMethodStatus.ok(res, `get transactions success`, transactions)
     }
 
   } catch (e) {
@@ -119,25 +119,65 @@ export const activityTransaction = async (req, res) => {
   }
 }
 
-export const filterTransaction = async(req, res) => {
-  try {
-    const { filters } = req.body
-    let filterTransactions = [];
-    let promises = []
-    for(var filter of filters){
-      promises.push(new Promise(async (resolve, reject) => {
-      const transactions = await Transaction.find({method: filter})
-      filterTransactions = filterTransactions.concat(transactions)
-      resolve(transactions)
+export const filterTransaction = async (req, res) => {
+  const { walletAddress, filters } = req.body
+  const history = await etherscanProvider.getHistory(walletAddress);
+  let promises = [];
+  for (const tx of history) {
+    promises.push(new Promise(
+      (resolve, reject) => {
+        axios.get(`https://raw.githubusercontent.com/ethereum-lists/4bytes/master/signatures/${tx['data'].substring(2, 10)}`).then(
+          (res) => {
+            if (res.status === 200) {
 
-      }))
-    }
+              const transaction = new Transaction({
+                value: ethers.utils.formatEther(tx.value),
+                from: tx.from,
+                to: tx.to,
+                data: tx.data,
+                timestamp: tx.timestamp,
+                method: res.data.split('(')[0],
+                blockNumber: tx.blockNumber,
+                hash: tx.hash,
+              })
+              resolve(transaction)
 
-    await Promise.all(promises)
+            }
+          }
+        ).catch(error => {
+          const transaction = new Transaction({
+            hash: tx.hash,
+            value: ethers.utils.formatEther(tx.value),
+            from: tx.from,
+            to: tx.to,
+            data: tx.data,
+            timestamp: tx.timestamp,
+            method: "transfer",
+            blockNumber: tx.blockNumber
+          })
+          resolve(transaction)
 
-    return HttpMethodStatus.ok(res, 'filter transaction success', filterTransactions)
-  
-  } catch (error) {
-    return HttpMethodStatus.badRequest(res, `error on filterTransaction ${error.message}`)
+        });
+      }
+    ))
   }
+  const transactions = await Promise.all(promises)
+
+  let filterTransactions = [];
+  let promisesFilter = []
+  // let transactions = []
+
+  for (var filter of filters) {
+    promisesFilter.push(new Promise(async (resolve, reject) => {
+      for (var tx of transactions) {
+        if (tx.method === filter) {
+          filterTransactions.push(tx)
+        }
+      }
+    }))
+  }
+
+  await Promise.all(promises)
+
+  return HttpMethodStatus.ok(res, 'filter transaction success', filterTransactions)
 }

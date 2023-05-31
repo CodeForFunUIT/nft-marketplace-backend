@@ -20,6 +20,9 @@ const transactionSchema = new mongoose.Schema({
     },
     blockNumber:{
         type: Number,
+    },
+    hash:{
+        type: String,
     }
 },
 )
