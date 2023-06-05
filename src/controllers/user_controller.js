@@ -7,6 +7,10 @@ import { activityType } from "../utility/enum.js";
 import formidable from "formidable";
 import fs from "fs";
 import Image from "../models/image.js";
+import SENDMAIL from "../email/transporter.js";
+import HTML_TEMPLATE from "../email/content_email.js";
+import dotenv from "dotenv";
+dotenv.config({ path: "../config/config.env" });
 export const getAllUser = async (req, res) => {
   const users = await User.find({}).populate("listNFT");
 
@@ -324,3 +328,121 @@ export const updateUri = async (req, res) => {
     return HttpMethodStatus.internalServerError(res, error.message);
   }
 };
+
+export const register = async (req, res) => {
+  try {
+    const { email, firstName, lastName, password } = req.body;
+
+    if (password.length < 8) {
+      return HttpMethodStatus.badRequest(
+        res,
+        `${password} must larger than 8 !!!`
+      );
+    }
+
+    const user = await User.findOne({ email });
+
+    if (user) {
+      return HttpMethodStatus.badRequest(res, `${email} is exist !!!`);
+    }
+
+    const saveUser = new User({
+      email,
+      password,
+      firstName,
+      lastName,
+      uniqueEmailId: Math.floor(Math.random() * 10) * Date.now(),
+    });
+
+    saveUser.save((err, data) => {
+      if (err)
+        return HttpMethodStatus.badRequest(
+          res,
+          `error on save user ${err.message}`
+        );
+      if (data) {
+        console.log(data.uniqueEmailId);
+        console.log(data.firstName);
+        SENDMAIL(
+          {
+            from: process.env.EMAIL_NAME,
+            to: email,
+            subject: "Welcome to NNG Marketplace",
+            text: "Verify email to access our marketplace",
+            html: HTML_TEMPLATE(data.uniqueEmailId),
+          },
+          (info) => {
+            console.log("Email sent successfully");
+            console.log("MESSAGE ID: ", info.messageId);
+          }
+        );
+        return HttpMethodStatus.ok(res, `save user success`, data);
+      }
+    });
+  } catch (error) {
+    return HttpMethodStatus.badRequest(
+      res,
+      `error on register ${error.message}`
+    );
+  }
+};
+
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (password.length < 8) {
+      return HttpMethodStatus.badRequest(
+        res,
+        `${password} must smaller than 8 !!!`
+      );
+    }
+
+    const user = await User.findOne({ email: email });
+
+    if (!user) {
+      return HttpMethodStatus.badRequest(res, `user not found `);
+    }
+
+    user.comparePassword(password, (err, isMatch) => {
+      if (isMatch) return HttpMethodStatus.ok(res, "login success", user);
+      else if(!isMatch) return HttpMethodStatus.badRequest(res, "wrong password, login failed!!!");;
+      if (err)
+        return HttpMethodStatus.badRequest(
+          res,
+          `error on compare password ${err.message}`
+        ); 
+    });
+  } catch (error) {
+    return HttpMethodStatus.badRequest(res, `error on login ${error.message}`);
+  }
+};
+export const verify = async (req, res) => {
+  const { uniqueEmailId } = req.params;
+
+  const user = await User.findOneAndUpdate(
+    { uniqueEmailId },
+    { isVerified: true },
+    { new: true },
+  );
+  if (user) {
+    return HttpMethodStatus.ok(res, "verify success", user);
+  } else {
+    return HttpMethodStatus.badRequest(res, "user not found!!");
+  }
+};
+
+export const addWallet = async (req, res) => {
+  try {
+    const { walletAddress } = req.body
+    const { userId } = req.params
+
+    const user = User.findByIdAndUpdate(userId, {
+      $push:{
+        walletList: walletAddress,
+      },
+    },{ new: true} )
+
+  } catch (error) {
+    
+  }
+}

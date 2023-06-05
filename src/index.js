@@ -22,15 +22,15 @@ dotenv.config({path: './config/config.env'})
 const app = express();
 
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors:{
-    origin: "https://example.com",
-    methods: ["GET", "POST"]
-  }
-});
+// const io = new Server(server, {
+//   cors:{
+//     origin: "https://example.com",
+//     methods: ["GET", "POST"]
+//   }
+// });
 
 app.use(express.json({ limit: "50mb", extended: true }));
-const allowedOrigins = ['http://localhost:3000','https://nft-marketplace-blue-one.vercel.app/'];
+// const allowedOrigins = ['http://localhost:3000','https://nft-marketplace-blue-one.vercel.app/'];
 
 const options = cors.CorsOption = {
   origin: '*'
@@ -118,19 +118,19 @@ contract.on(filterMatchOrder, (orderId,seller,buyer,tokenId,paymentToken,price) 
   console.log(JSON.stringify(transfer,null,4))
 })
 
-io.on('connection', (socket) => {
-  console.log('a user connected');
+// io.on('connection', (socket) => {
+//   console.log('a user connected');
 
-  socket.on('disconnect', () => {
-    console.log('user disconnected');
-  });
+//   socket.on('disconnect', () => {
+//     console.log('user disconnected');
+//   });
 
-  socket.on('send-message', (msg) => {
-    console.log('message: ' + msg);
-    io.emit("receive-message", msg);
+//   socket.on('send-message', (msg) => {
+//     console.log('message: ' + msg);
+//     io.emit("receive-message", msg);
 
-  });
-});
+//   });
+// });
 
 
 // app.use((req, res, next) => {

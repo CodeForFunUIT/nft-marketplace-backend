@@ -24,4 +24,12 @@ const sortByNFT = {
     OLDEST:"Oldest"
 }
 
+const methodTransaction = {
+    ADD_ORDER: '0xc46142c5',
+    APPROVE: '0x095ea7b3',
+    CANCEL_ORDER: '0x514fcac7',
+    TRANSFER: '0xa9059cbb',
+    MINT_PUBLIC: '0x161ac21f'
+}
+
 export  {statusNFT, event,sortByNFT, activityType};

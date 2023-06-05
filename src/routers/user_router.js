@@ -15,7 +15,10 @@ import {
   likeNFT,
   dislikeNFT,
   getWishListNFT,
-  updateUri
+  updateUri,
+  login,
+  register,
+  verify,
 } from "../controllers/user_controller.js";
 
 router.get("/getUsers",getAllUser)
@@ -31,4 +34,7 @@ router.post("/changeName",changeName)
 router.post("/likeNFT", likeNFT)
 router.post("/dislikeNFT", dislikeNFT)
 router.post("/updateUri", updateUri)
+router.post("/login",login)
+router.post("/register",register)
+router.get("/verify/:uniqueEmailId", verify)
 export default router;
