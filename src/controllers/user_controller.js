@@ -403,8 +403,19 @@ export const login = async (req, res) => {
       return HttpMethodStatus.badRequest(res, `user not found `);
     }
 
+    // if(!user.isVerified){
+    //   return HttpMethodStatus.badRequest(res, `your email haven't verified`);
+    // }
+
     user.comparePassword(password, (err, isMatch) => {
-      if (isMatch) return HttpMethodStatus.ok(res, "login success", user);
+      if (isMatch) return res.status(200).send({
+        success: true,
+        message: "login success", 
+        data: {
+          "payload": user,
+          "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NDA5NTZlZmUxNThhMzljMjE2NzU5ODAiLCJlbWFpbCI6ImFuaG5oYW5sZTE5MDVAZ21haWwuY29tIiwicm9sZSI6IkdVRVNUIiwiaWF0IjoxNjg2MTg4ODIxLCJleHAiOjE2ODY0NDgwMjF9.mskW7j1ngz2nvDpfm8hRTOJrOGJ79p4O9P_zCHfNjXI"
+        }
+      })
       else if(!isMatch) return HttpMethodStatus.badRequest(res, "wrong password, login failed!!!");;
       if (err)
         return HttpMethodStatus.badRequest(
