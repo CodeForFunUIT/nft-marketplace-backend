@@ -19,6 +19,7 @@ import {
   login,
   register,
   verify,
+  getUser
 } from "../controllers/user_controller.js";
 
 router.get("/getUsers",getAllUser)
@@ -37,4 +38,5 @@ router.post("/updateUri", updateUri)
 router.post("/login",login)
 router.post("/register",register)
 router.get("/verify/:uniqueEmailId", verify)
+router.get("/getUser",getUser)
 export default router;

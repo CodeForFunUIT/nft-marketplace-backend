@@ -10,6 +10,7 @@ import Image from "../models/image.js";
 import SENDMAIL from "../email/transporter.js";
 import HTML_TEMPLATE from "../email/content_email.js";
 import dotenv from "dotenv";
+import Jwt  from "jsonwebtoken";
 dotenv.config({ path: "../config/config.env" });
 export const getAllUser = async (req, res) => {
   const users = await User.find({}).populate("listNFT");
@@ -37,6 +38,29 @@ export const getUserByAddressOwner = async (req, res) => {
     return HttpMethodStatus.badRequest(res, error.message);
   }
 };
+
+export const getUser = async (req, res) => {
+  try {
+    const authorizationHeader = req.headers['authorization'];
+    if(!authorizationHeader){
+      return HttpMethodStatus.forbidden(res, 'missing header authorization')
+    }
+    const token = authorizationHeader.split(' ')[1];
+    if(!token) return HttpMethodStatus.unAuthenticated(res, 'missing token');
+    
+    Jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, data) => {
+      if(err) return HttpMethodStatus.forbidden(res, err.message);
+      if(data) {
+        const user = await User.findById(data.id)
+        if(user) return HttpMethodStatus.ok(res, 'get user success', user)
+        else return HttpMethodStatus.badRequest(res, 'user not exist')
+      }
+    });  
+  } catch (error) {
+    return HttpMethodStatus.badRequest(res, `error on ${error.message}`)
+  }
+}
+
 export const getNFTUserFromMongo = async (req, res) => {
   try {
     const { address } = req.body;
@@ -408,20 +432,24 @@ export const login = async (req, res) => {
     // }
 
     user.comparePassword(password, (err, isMatch) => {
-      if (isMatch) return res.status(200).send({
-        success: true,
-        message: "login success", 
-        data: {
-          "payload": user,
-          "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NDA5NTZlZmUxNThhMzljMjE2NzU5ODAiLCJlbWFpbCI6ImFuaG5oYW5sZTE5MDVAZ21haWwuY29tIiwicm9sZSI6IkdVRVNUIiwiaWF0IjoxNjg2MTg4ODIxLCJleHAiOjE2ODY0NDgwMjF9.mskW7j1ngz2nvDpfm8hRTOJrOGJ79p4O9P_zCHfNjXI"
-        }
-      })
-      else if(!isMatch) return HttpMethodStatus.badRequest(res, "wrong password, login failed!!!");;
+      if (isMatch) {
+        const accessToken = Jwt.sign({id:user._id },process.env.ACCESS_TOKEN_SECRET,{expiresIn: '600s'},)
+
+        return res.status(200).send({
+          success: true,
+          message: "login success",
+          data: {
+            "payload": user,
+            "token": accessToken
+          }
+        })
+      }
+      else if (!isMatch) return HttpMethodStatus.badRequest(res, "wrong password, login failed!!!");;
       if (err)
         return HttpMethodStatus.badRequest(
           res,
           `error on compare password ${err.message}`
-        ); 
+        );
     });
   } catch (error) {
     return HttpMethodStatus.badRequest(res, `error on login ${error.message}`);
@@ -448,12 +476,12 @@ export const addWallet = async (req, res) => {
     const { userId } = req.params
 
     const user = User.findByIdAndUpdate(userId, {
-      $push:{
+      $push: {
         walletList: walletAddress,
       },
-    },{ new: true} )
+    }, { new: true })
 
   } catch (error) {
-    
+
   }
 }

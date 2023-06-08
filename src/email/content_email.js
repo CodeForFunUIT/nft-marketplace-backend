@@ -43,7 +43,7 @@ const HTML_TEMPLATE = (text) => {
               </div>
               <div class="email-body">
                 <p>
-                  Press <a href=http://localhost:5000/user/verify/${text}> here </a> to verify your email. Thanks
+                  Press <a href=https://nft-marketplace-backend-z4eu.vercel.app/user/verify/${text}> here </a> to verify your email. Thanks
                 
                 </p>
               </div>
