@@ -6,6 +6,7 @@ import User from "../models/user.js";
 import NFT from "../models/nft.js";
 import { statusNFT } from "../utility/enum.js";
 import { contractMarketPlace } from "../utility/contract.js";
+import WalletSchema from "../models/wallet.js"
 import schedule from "node-schedule";
 import { utcToZonedTime } from "date-fns-tz";
 import { vietnamTimezone } from "../utility/vietnam_timezone.js";
@@ -237,17 +238,29 @@ export const addOrdersFromBlochainToMongo = async (req, res) => {
   }
 
   let promises = listOrderAdd.map(async (order) => {
-    const nft = await NFT.findOne({tokenId: order.tokenId})
-    if(!nft){
-      throw(`nft not exist with tokenId: ${nft.tokenId}`);
-    }
+    // const nft = await NFT.findOne({tokenId: order.tokenId})
+    // if(!nft){
+    //   throw(`nft not exist with tokenId: ${nft.tokenId}`);
+    // }
     
     const orderAdd = await EventOrderAdd.findOne({orderId: order.orderId})
-    console.log(`orderId ${nft.orderId}`);
+    console.log(`tokenId ${order.tokenId}`);
     console.log(`orderAdd: ${orderAdd}`)
 
     if(!orderAdd){
-      console.log();
+      const seller = await WalletSchema.findOne({walletAddress: order.seller})
+      if(!seller) return HttpMethodStatus.badRequest(res, `not exist wallet with address: ${order.seller}`)
+      
+      const nft = await NFT.findOneAndUpdate(
+        { tokenId: order.tokenId }, 
+        { status: statusNFT.SELLING, 
+          price: order.price,
+          orderId: order.orderId,
+          walletOwner: "0x9b8CE88feAc9CA68AB3F5C393177D83134b6C00c".toLowerCase(),
+          owner: null,
+          seller: seller._id,
+        })
+
       const newEventOrderAdd = new EventOrderAdd({
         transactionHash: order.transactionHash,
         orderId: order.orderId,

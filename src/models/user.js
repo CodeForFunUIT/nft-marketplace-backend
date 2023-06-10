@@ -8,24 +8,24 @@ var validateEmail = function (email) {
 const SALT_WORK_FACTOR = 10
 
 const userSchema = new mongoose.Schema({
-  walletAddress: {
-    type: String,
-    // unique: true,
-    // validate: { isLowercase: true },
-    // required: true,
-  },
-  signature: {
-    type: String,
-    // required: true,
-  },
-  nonce: {
-    type: Number,
-    defaultValue: () => Math.floor(Math.random() * 1000000),
-  },
-  listNFT: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'NFT'
-  }],
+  // walletAddress: {
+  //   type: String,
+  //   // unique: true,
+  //   // validate: { isLowercase: true },
+  //   // required: true,
+  // },
+  // signature: {
+  //   type: String,
+  //   // required: true,
+  // },
+  // nonce: {
+  //   type: Number,
+  //   defaultValue: () => Math.floor(Math.random() * 1000000),
+  // },
+  // listNFT: [{
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: 'NFT'
+  // }],
   name: {
     type: String,
     default: "unnamed"
@@ -38,6 +38,10 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Wallet'    
   }],
+  image: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Image'    
+  },
   uri: {
     type: String,
   },

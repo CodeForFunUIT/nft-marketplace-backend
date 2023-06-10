@@ -19,7 +19,11 @@ const walletSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
+    listNFT: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'NFT'
+      }],
 })
 
-const Wallet = mongoose.model("Wallet", walletSchema)
-export default Wallet;
+const WalletSchema = mongoose.model("Wallet", walletSchema)
+export default WalletSchema;

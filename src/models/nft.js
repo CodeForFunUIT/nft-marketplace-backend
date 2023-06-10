@@ -17,7 +17,11 @@ const nftSchema = new mongoose.Schema({
     },
     seller:{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
+        ref: "Wallet"
+    },
+    image: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Image"
     },
     uri: {
         type: String,
@@ -35,6 +39,7 @@ const nftSchema = new mongoose.Schema({
     },
     price: {
         type: Number,
+        default: 0,
     },
     paymentToken: {
         type: String,
@@ -42,8 +47,17 @@ const nftSchema = new mongoose.Schema({
     },
     favorite:{
         type: Number,
+        default: 0,
     },
-
+    tagNFT: {
+        type: String,
+    },
+    subTagNFT: {
+        type: String
+    },
+    catalyst: {
+        type: String
+    },
 },
 {
     timestamps: {createdAt: 'created_at'}

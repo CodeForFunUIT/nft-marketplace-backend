@@ -19,7 +19,8 @@ import {
   login,
   register,
   verify,
-  getUser
+  getUser,
+  importWallet,
 } from "../controllers/user_controller.js";
 
 router.get("/getUsers",getAllUser)
@@ -39,4 +40,5 @@ router.post("/login",login)
 router.post("/register",register)
 router.get("/verify/:uniqueEmailId", verify)
 router.get("/getUser",getUser)
+router.post("/importWallet",importWallet)
 export default router;

@@ -1,7 +1,7 @@
 import HttpMethodStatus from "../utility/static.js";
 import NFT from "../models/nft.js";
 import User from "../models/user.js";
-import { sortByNFT, statusNFT } from "../utility/enum.js";
+import { tagsNFT, subTagsNFT, catalystType, sortByNFT, statusNFT } from "../utility/enum.js";
 import { vietnamTimezone } from "../utility/vietnam_timezone.js";
 import { utcToZonedTime } from "date-fns-tz";
 import Auction from "../models/auction.js";
@@ -9,118 +9,83 @@ import Image from "../models/image.js";
 import Sharp from "sharp";
 import formidable from "formidable";
 import fs from "fs";
+import { openLootBox } from "../utility/open_loot_box.js";
+import { Wallet } from "ethers";
+import WalletSchema from "../models/wallet.js";
 
 export const addNFT = async (req, res) => {
   try {
-    const form = new formidable.IncomingForm({ multiples: true });
+    const { tokenId, userId, walletAddress } = req.body
 
-    form.parse(req, async (err, fields, files)  => {
-      if (err) {
-        return HttpMethodStatus.badRequest(res, err.message);
-      }
-      const tokenId = fields.tokenId;
-      const orderId = fields.orderId;
-      const seller = fields.seller.toLowerCase()
-      const walletOwner = fields.walletOwner.toLowerCase()
-      const name = fields.name;
-      const status = fields.status;
-      const price = fields.price;
-      const oldPath = files.images.filepath;
+    const catalyst = openLootBox();
+    console.log(catalyst)
 
-      fs.readFile(oldPath, async (err, data) => {
-        if (err) {
-          return HttpMethodStatus.badRequest(res, err.message);
-        }
-        const image = new Image({ data });
-        await image.save(async (err, result) => {
-          if (err) {
-            return HttpMethodStatus.badRequest(res, err.message);
-          }
-        });
-        
-        const isNftExist = await NFT.findOne({ tokenId: tokenId });
-        if (isNftExist) {
-          return HttpMethodStatus.badRequest(res, "nft is exist");
-        }
-    
-        const user = await User.findOne({walletAddress: seller})
-    
-        if(!user){
-          return HttpMethodStatus.badRequest(res, "user not exist");
-        }
-    
-        const newNft = new NFT({
-          tokenId: tokenId,
-          orderId: orderId,
-          seller: user._id,
-          status: status,
-          walletOwner: walletOwner,
-          uri: `https://nft-marketplace-backend-z4eu.vercel.app/image/${image._id}` ,
-          name: name,
-          status: status,
-          price: price,
-        });
+    // await Image.find({catalyst})
 
-        ///Save nft
-        newNft.save(async (error, nft) => {
-          if(error){
-            return HttpMethodStatus.badRequest(res, `error in save NFT ${error.message}`)
-          }
-          await user.updateOne({$addToSet: {listNFT: nft._id}});
-          return HttpMethodStatus.created(res, "create new NFT success!", nft);
-        });
-      })
-    });
 
-  } catch (error) {
-    return HttpMethodStatus.internalServerError(res, error.message);
-  }
-};
 
-export const addNFTtest = async (req, res) => {
-  try {
-    const form = new formidable.IncomingForm({ multiples: true });
+    const randomImage = await Image.aggregate([
+      { $match: { isUse: false, catalyst: catalyst } },
+      { $sample: { size: 1 } }
+    ]);
 
-    form.parse(req, async (err, fields, files)  => {
-      if (err) {
-        return HttpMethodStatus.badRequest(res, err.message);
-      }
-      const tokenId = fields.tokenId;
-      const orderId = fields.orderId;
-      const seller = fields.seller.toLowerCase()
-      const walletOwner = fields.walletOwner.toLowerCase()
-      const name = fields.name;
-      const status = fields.status;
-      const price = fields.price;
-      // const oldPath = files.images.filepath;
+    if (randomImage.length > 0) {
 
-      const isNftExist = await NFT.findOne({ tokenId: tokenId });
-      if (isNftExist) {
-        return HttpMethodStatus.badRequest(res, "nft is exist");
-      }
-  
-      const user = await User.findOne({walletAddress: seller})
-  
-      if(!user){
-        return HttpMethodStatus.badRequest(res, "user not exist");
-      }
-  
-      const newNft = new NFT({
+      const selectedImage = randomImage[0];
+      // const image = await Image.findByIdAndUpdate(selectedImage._id, {
+      //   isUse: true
+      // }, { new: true })
+
+      /// TODO đang suy nghĩ nên cho lặp ảnh hay không
+      ///      nếu có thì set isUse: true
+      const image = await Image.findById(selectedImage._id)
+
+      const findNFT = await NFT.findOne({tokenId: tokenId})
+      if(findNFT) return HttpMethodStatus.badRequest(res, `this nft is exist with tokenId: ${tokenId}`)
+
+      const user = await User.findById(userId)
+      if (!user) return HttpMethodStatus.badRequest(res, `not exist user with id: ${userId}`)
+
+      const wallet = await WalletSchema.findOne({ walletAddress: walletAddress.toLowerCase() })
+      if (!wallet) return HttpMethodStatus.badRequest(res, `not exist wallet with address: ${walletAddress}`)
+
+      const nft = new NFT({
         tokenId: tokenId,
-        orderId: orderId,
-        seller: user._id,
-        status: status,
-        walletOwner: walletOwner,
-        name: name,
-        status: status,
-        price: price,
-      });
-      ///Save nft
-      newNft.save((error, nft) => {
-        return HttpMethodStatus.created(res, "create new NFT success!", nft);
-      });
+        orderId: 0,
+        walletOwner: walletAddress.toLowerCase(),
+        owner: user._id,
+        seller: wallet._id,
+        image: image._id,
+        uri: image.url,
+        name: image.name,
+        status: statusNFT.ONSTOCK,
+        tagNFT: image.tagNFT,
+        subTagNFT: image.subTagNFT,
+        catalyst: image.catalyst,
+      })
 
-    });
+        nft.save( async (err, data) => {
+          if(err) return HttpMethodStatus.badRequest(res, `error on save nft ${err.message}`)
+          if(data){
+            wallet.listNFT.push(data._id)
+            await wallet.save()
+            const newNFT = await NFT.findById(data._id)
+            // .populate({path: 'image' })
+            .populate({path: 'seller' , select: "_id walletAddress"})
+            .populate({path: 'owner' ,select: "email firstName lastName" })
+
+            // console.log(tmpNFT)
+            return HttpMethodStatus.ok(res, 'add nft success', newNFT);
+          }
+        }) 
+
+
+      
+    } else {
+      return HttpMethodStatus.badRequest(res, "Empty image")
+    }
+
+
   } catch (error) {
     return HttpMethodStatus.internalServerError(res, error.message);
   }
@@ -130,7 +95,7 @@ export const addNFTtest = async (req, res) => {
 export const getNFTs = async (req, res) => {
   const nfts = await NFT.find({}).populate({
     path: "seller",
-    select: "_id name walletAddress",
+    select: "_id walletAddress ",
   });
 
   HttpMethodStatus.ok(res, "get NFT success", nfts);
@@ -340,30 +305,55 @@ export const auctionNFT = async (req, res) => {
 };
 
 export const uploadImageNFT = async (req, res) => {
-  // const {price, name, introduction, category, tag} = req.body
-  let images = [];
-  try {
-    if (req.files) {
-      const list = images.concat(
-        await Promise.all(
-          req.files.map(async (e) => {
-            const buffer = await Sharp(e.buffer).toBuffer();
-            const image = await new Image({ data: buffer }).save();
-            return `https://nft-marketplace-backend-z4eu.vercel.app/image/${image._id}`;
-          })
-        )
-      );
-      images = [...list];
-    } else {
-      return res.status(400).send({ msg: "please upload image" });
-    }
 
-    return HttpMethodStatus.ok(res, "upload image success", images);
-  } catch (e) {
-    return HttpMethodStatus.badRequest(res, e.message);
+  try {
+    const form = new formidable.IncomingForm({ multiples: true });
+
+    form.parse(req, async (err, fields, files) => {
+      if (err) {
+        return HttpMethodStatus.badRequest(res, err.message);
+      }
+
+      const tagNFT = fields.tagNFT;
+      const subTagNFT = fields.subTagNFT
+      const catalyst = fields.catalyst
+      const name = fields.name
+      const path = files.images.filepath;
+
+
+      const catalystExist = Object.values(catalystType).includes(catalyst);
+      const tagNFTExist = Object.values(tagsNFT).includes(tagNFT);
+      const subTagNFTExist = Object.values(subTagsNFT).includes(subTagNFT);
+
+      if (!catalystExist) return HttpMethodStatus.badRequest(res, `not exist catalyst ${catalyst} in catalystType: ${Object.values(catalystType)}`)
+      if (!tagNFTExist) return HttpMethodStatus.badRequest(res, `not exist tagNFT ${tagNFT} in tagsNFT: ${Object.values(tagsNFT)}`)
+      if (!subTagNFTExist) return HttpMethodStatus.badRequest(res, `not exist subTagNFT ${subTagNFT} subTagNFT: ${Object.values(subTagsNFT)}`)
+
+      fs.readFile(path, async (err, data) => {
+        if (err) {
+          return HttpMethodStatus.badRequest(res, err.message);
+        }
+        const image = new Image({
+          data,
+          name,
+          tagNFT,
+          subTagNFT,
+          catalyst,
+          isUse: false,
+          url: "url" /// do not delete
+        });
+        image.save(async (err, resutl) => {
+          if (err) return HttpMethodStatus.badRequest(res, `error on save Image ${err.message}`)
+          if (resutl) return HttpMethodStatus.ok(res, 'save image success', resutl)
+        })
+      });
+
+    });
+  } catch (err) {
+    return HttpMethodStatus.badRequest(res, `error on uploadImageNFT ${err.message}`)
   }
 };
 export const uploadGifNFT = async (req, res) => {
   try {
-  } catch (error) {}
+  } catch (error) { }
 };

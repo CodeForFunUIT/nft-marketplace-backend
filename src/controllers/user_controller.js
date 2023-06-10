@@ -10,7 +10,8 @@ import Image from "../models/image.js";
 import SENDMAIL from "../email/transporter.js";
 import HTML_TEMPLATE from "../email/content_email.js";
 import dotenv from "dotenv";
-import Jwt  from "jsonwebtoken";
+import Jwt from "jsonwebtoken";
+import WalletSchema from "../models/wallet.js"
 dotenv.config({ path: "../config/config.env" });
 export const getAllUser = async (req, res) => {
   const users = await User.find({}).populate("listNFT");
@@ -42,20 +43,20 @@ export const getUserByAddressOwner = async (req, res) => {
 export const getUser = async (req, res) => {
   try {
     const authorizationHeader = req.headers['authorization'];
-    if(!authorizationHeader){
+    if (!authorizationHeader) {
       return HttpMethodStatus.forbidden(res, 'missing header authorization')
     }
     const token = authorizationHeader.split(' ')[1];
-    if(!token) return HttpMethodStatus.unAuthenticated(res, 'missing token');
-    
+    if (!token) return HttpMethodStatus.unAuthenticated(res, 'missing token');
+
     Jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, data) => {
-      if(err) return HttpMethodStatus.forbidden(res, err.message);
-      if(data) {
+      if (err) return HttpMethodStatus.forbidden(res, err.message);
+      if (data) {
         const user = await User.findById(data.id)
-        if(user) return HttpMethodStatus.ok(res, 'get user success', user)
+        if (user) return HttpMethodStatus.ok(res, 'get user success', user)
         else return HttpMethodStatus.badRequest(res, 'user not exist')
       }
-    });  
+    });
   } catch (error) {
     return HttpMethodStatus.badRequest(res, `error on ${error.message}`)
   }
@@ -318,6 +319,7 @@ export const updateUri = async (req, res) => {
       }
 
       const walletAddress = fields.walletAddress.toLowerCase();
+      const id = fields.id
       const oldPath = files.images.filepath;
 
       fs.readFile(oldPath, async (err, data) => {
@@ -325,15 +327,15 @@ export const updateUri = async (req, res) => {
           return HttpMethodStatus.badRequest(res, err.message);
         }
 
-        const image = new Image({ data });
+        const image = new Image({ data, isUse: true, url: "url", });
         await image.save(async (err, result) => {
           if (err) {
             return HttpMethodStatus.badRequest(res, err.message);
           }
         });
 
-        const user = await User.findOneAndUpdate(
-          { walletAddress: walletAddress },
+        const user = await User.findByIdAndUpdate(
+          id,
           {
             $set: {
               uri: `https://nft-marketplace-backend-z4eu.vercel.app/image/${image._id}`,
@@ -433,13 +435,13 @@ export const login = async (req, res) => {
 
     user.comparePassword(password, (err, isMatch) => {
       if (isMatch) {
-        const accessToken = Jwt.sign({id:user._id },process.env.ACCESS_TOKEN_SECRET,{expiresIn: '600s'},)
+        const accessToken = Jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '600s' },)
 
         return res.status(200).send({
           success: true,
           message: "login success",
           data: {
-            "payload": user,
+            "payload": user.toJSON(),
             "token": accessToken
           }
         })
@@ -470,18 +472,35 @@ export const verify = async (req, res) => {
   }
 };
 
-export const addWallet = async (req, res) => {
+export const importWallet = async (req, res) => {
   try {
-    const { walletAddress } = req.body
-    const { userId } = req.params
+    const { walletAddress, signature, userId } = req.body
 
-    const user = User.findByIdAndUpdate(userId, {
-      $push: {
-        walletList: walletAddress,
-      },
-    }, { new: true })
+    const user = await User.findById(userId)
+    if (!user) return HttpMethodStatus.badRequest(res, `user not exist with id: ${userId}`)
 
+    const wallet = await WalletSchema.findOne({ walletAddress: walletAddress.toLowerCase() })
+
+    if(wallet) return HttpMethodStatus.badRequest(res, `wallet is exist with address: ${walletAddress}`)
+
+    new WalletSchema({
+      walletAddress: walletAddress.toLowerCase(),
+      owner: user._id,
+      signature,
+    }).save(async (err, data) => {
+      if (err) return HttpMethodStatus.badRequest(res, `error on save wallet with address: ${walletAddress}`);
+      if (data) {
+      const saveUser = await User.findByIdAndUpdate(
+          userId,
+          { $addToSet: { walletList: data._id } },
+          { new: true }
+        ).populate({
+          path: "walletList",
+        });
+        return HttpMethodStatus.ok(res, `import wallet success with address: ${walletAddress}`, saveUser)
+      }
+    })
   } catch (error) {
-
+    return HttpMethodStatus.badRequest(res, `error on importWallet: ${error.message}`)
   }
 }

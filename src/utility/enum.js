@@ -24,12 +24,32 @@ const sortByNFT = {
     OLDEST:"Oldest"
 }
 
-const methodTransaction = {
-    ADD_ORDER: '0xc46142c5',
-    APPROVE: '0x095ea7b3',
-    CANCEL_ORDER: '0x514fcac7',
-    TRANSFER: '0xa9059cbb',
-    MINT_PUBLIC: '0x161ac21f'
+const tagsNFT = {
+    WEAPON: 'weapon',
+    ANIMAL: 'animal',
+    POTION: 'potion',
+    JEWELRY: 'jewelry',
 }
 
-export  {statusNFT, event,sortByNFT, activityType};
+const subTagsNFT = {
+    SWORD: 'sword',
+    ARMOR: 'armor',
+    BOW: 'bow',
+    CROWN: 'crown',
+    DRAGON: 'dragon',
+    HEAL_POTION: 'heal_potion',
+    MANA_POTION: 'mana_potion',
+    HORSE: 'horse',
+    KNIFE: 'knife',
+    RING: 'ring',
+    SHIELD: 'shield',
+}
+
+const catalystType = {
+    COMMON: 'common',
+    RARE: 'rare',
+    EPIC: 'epic',
+    LEGENDARY: 'legendary'
+}
+
+export  {statusNFT, event,sortByNFT, activityType ,tagsNFT, subTagsNFT, catalystType};
