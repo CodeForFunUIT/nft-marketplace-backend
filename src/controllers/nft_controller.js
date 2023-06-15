@@ -208,6 +208,38 @@ export const filterMinMaxNFT = async (req, res) => {
   }
 };
 
+export const filterNFT = async (req, res) => {
+  const { filters } = req.body
+  let catalysts = []
+  let tagNFTs = []
+  let subTagNFTs = []
+  try {
+
+    for(var filter of filters){
+      if(Object.values(catalystType).includes(filter)){
+        catalysts.push(filter)
+      }else if(Object.values(tagsNFT).includes(filter)){
+        tagNFTs.push(filter)
+      }else if(Object.values(subTagsNFT).includes(filter)){
+        subTagNFTs.push(filter)
+      }else{
+        return HttpMethodStatus.badRequest(res, 
+          `not exist catalyst ${filter} in catalyst filter: ${Object.values(catalystType)}, in tagsNFT filter: ${Object.values(tagsNFT)},in subTagsNFT filter: ${Object.values(subTagsNFT)} `)
+      }
+    }  
+    const nfts = await NFT.find({
+      tagNFT: tagNFTs.length > 0 ? { $in: tagNFTs } : { $exists: true },
+      catalyst: catalysts.length > 0 ? { $in: catalysts } : { $exists: true },
+      subTagNFT: subTagNFTs.length > 0 ? { $in: subTagNFTs } : { $exists: true },
+    }).populate({path: "seller", select: "_id walletAddress"})
+
+    return HttpMethodStatus.ok(res, `filter success with: ${filters}`, nfts)
+
+  } catch (error) {
+    return HttpMethodStatus.badRequest(res, `error on filter NFT: ${error.message}`)
+  }
+}
+
 export const sortNFT = async (req, res) => {
   try {
     const { sortBy } = req.body;
