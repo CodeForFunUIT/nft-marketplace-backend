@@ -28,6 +28,13 @@ export const addOrder = async (req, res) => {
     }
     // const nft = await NFT.findOneAndUpdate({'nftID': eventMarketPlace[newIndex].args[2]},
     // {"$set": {price: 250000000000000000000, status: "onStock", addressOwner: eventMarketPlace[newIndex].args[1].toLowerCase()}}).exec();
+
+    const sellerAddress = await WalletSchema.findOne({ walletAddress: eventMarketPlace[newIndex].args[1].toLowerCase() })
+
+    if (!sellerAddress) {
+      return HttpMethodStatus.badRequest(res, `wallet address not exist with address: ${sellerAddress}`)
+    }
+
     const nft = await NFT.findOneAndUpdate(
       { tokenId: eventMarketPlace[newIndex].args[2] },
       {
@@ -35,7 +42,8 @@ export const addOrder = async (req, res) => {
           price: eventMarketPlace[newIndex].args[4],
           status: statusNFT.SELLING,
           orderId: eventMarketPlace[newIndex].args[0],
-          walletOwner: "0x9b8ce88feac9ca68ab3f5c393177d83134b6c00c"
+          walletOwner: "0x9b8ce88feac9ca68ab3f5c393177d83134b6c00c",
+          owner: null,
         },
       }
     ).exec();
@@ -242,18 +250,19 @@ export const addOrdersFromBlochainToMongo = async (req, res) => {
     // if(!nft){
     //   throw(`nft not exist with tokenId: ${nft.tokenId}`);
     // }
-    
-    const orderAdd = await EventOrderAdd.findOne({orderId: order.orderId})
+
+    const orderAdd = await EventOrderAdd.findOne({ orderId: order.orderId })
     console.log(`tokenId ${order.tokenId}`);
     console.log(`orderAdd: ${orderAdd}`)
 
-    if(!orderAdd){
-      const seller = await WalletSchema.findOne({walletAddress: order.seller})
-      if(!seller) return HttpMethodStatus.badRequest(res, `not exist wallet with address: ${order.seller}`)
-      
+    if (!orderAdd) {
+      const seller = await WalletSchema.findOne({ walletAddress: order.seller })
+      if (!seller) return HttpMethodStatus.badRequest(res, `not exist wallet with address: ${order.seller}`)
+
       const nft = await NFT.findOneAndUpdate(
-        { tokenId: order.tokenId }, 
-        { status: statusNFT.SELLING, 
+        { tokenId: order.tokenId },
+        {
+          status: statusNFT.SELLING,
           price: order.price,
           orderId: order.orderId,
           walletOwner: "0x9b8CE88feAc9CA68AB3F5C393177D83134b6C00c".toLowerCase(),
@@ -274,7 +283,7 @@ export const addOrdersFromBlochainToMongo = async (req, res) => {
         name: nft.name,
         uri: nft.uri,
       });
-        ///Save event
+      ///Save event
       await newEventOrderAdd.save((error, data) => {
         if (error) {
           return HttpMethodStatus.badRequest(res, error.message);
@@ -284,8 +293,8 @@ export const addOrdersFromBlochainToMongo = async (req, res) => {
     }
     return orderAdd;
   });
-  
-  Promise.all(promises).then(function(results) {
+
+  Promise.all(promises).then(function (results) {
     console.log('forEach đã hoàn thành');
     console.log(results);
   });
@@ -294,14 +303,14 @@ export const addOrdersFromBlochainToMongo = async (req, res) => {
 /// lấy order từ mongodb
 export const getOrdersFromMongo = async (req, res) => {
   const orders = await EventOrderAdd.find({})
-  .populate({ 
-    path: 'nft', 
-    select: '_id tokenId name uri walletOwner seller',
-    populate: {
-      path: 'seller',
-      select: '_id name walletAddress'
-    } 
-  })
+    .populate({
+      path: 'nft',
+      select: '_id tokenId name uri walletOwner seller',
+      populate: {
+        path: 'seller',
+        select: '_id name walletAddress'
+      }
+    })
   return HttpMethodStatus.ok(res, "list order from mongodb", orders);
 };
 
@@ -396,44 +405,41 @@ export const getEventOrderMatch = async (req, res) => {
 
 export const executeOrder = async (req, res) => {
   try {
-    const { seller, buyer, orderId } = req.body;
+    const { buyer, orderId } = req.body;
 
-    const order = await EventOrderAdd.findOne({ orderId: orderId });
+    const order = await EventOrderAdd.findOneAndDelete({ orderId: orderId });
     if (!order) {
-      return HttpMethodStatus.badRequest(res, "order not exist");
+      return HttpMethodStatus.badRequest(res, `order not exist with orderId: ${orderId}`);
     }
 
-    const orderExecute = await EventOrderAdd.findOneAndDelete({
-      orderId: orderId,
-    });
-
-    const isBuyerExist = await User.findOne({
+    const wallet = await WalletSchema.findOne({
       walletAddress: buyer.toLowerCase(),
     });
 
-    if (!isBuyerExist) {
-      return HttpMethodStatus.badRequest(res, "buyer not exist!!");
+    if (!wallet) {
+      return HttpMethodStatus.badRequest(res, `address buyer not exist with address: ${buyer}`);
     }
 
-    const isSellerExist = await User.findOne({
-      walletAddress: seller.toLowerCase(),
-    });
-
-    if (!isSellerExist) {
-      return HttpMethodStatus.badRequest(res, "seller not exist!!");
-    }
     await NFT.findOneAndUpdate(
-      { tokenId: orderExecute.tokenId },
-      { owner: isBuyerExist._id, status: statusNFT.ONSTOCK }
+      { tokenId: order.tokenId },
+      { owner: wallet.owner._id, 
+        status: statusNFT.ONSTOCK, 
+        price: 0, 
+        walletOwner: wallet.walletAddress.toLowerCase(),
+        orderId: 0, 
+      }
     );
-
-    const userBuy = await User.findOne({ walletAddress: buyer.toLowerCase() });
-    const listNFT = await NFT.find({ owner: userBuy._id }).select(
+    const listNFT = await NFT.find({ walletOwner: wallet.walletAddress }).select(
       "_id tokenId orderId uri name price"
     );
 
-    userBuy.listNFT = listNFT;
-    return HttpMethodStatus.ok(res, "execute success!", userBuy);
+    wallet.listNFT = listNFT;
+    await wallet.findOneAndUpdate(
+      { walletAddress: buyer.toLowerCase() },
+      { listNFT: listNFT },
+      { new: true}
+    );
+    return HttpMethodStatus.ok(res, "execute success!", wallet);
   } catch (error) {
     return HttpMethodStatus.badRequest(res, error.message);
   }
@@ -450,22 +456,37 @@ export const cancelOrder = async (req, res) => {
 
     await EventOrderAdd.findOneAndDelete({ orderId: orderId });
 
-    const nft = await NFT.findOneAndUpdate(
-      { tokenId: order.tokenId },
-      { status: statusNFT.ONSTOCK }
-    );
+    const wallet = await WalletSchema.findOne({ walletAddress: order.seller.toLowerCase() })
 
-    const user = await User.findById(nft.seller._id);
+    if (!wallet) {
+      return HttpMethodStatus.badRequest(res, `wallet not exist with address: ${order.seller}`)
+    }
+
+    const user = await User.findById(wallet.owner._id);
     if (!user) {
       return HttpMethodStatus.badRequest(res, "user not exist")
     }
-    await NFT.findOneAndUpdate(
+
+    const nft = await NFT.findOneAndUpdate(
       { tokenId: order.tokenId },
       {
-        status: statusNFT.ONSTOCK,
-        walletOwner: user.walletAddress
+        $set: {
+          price: 0,
+          status: statusNFT.ONSTOCK,
+          orderId: 0,
+          walletOwner: order.seller,
+          owner: user._id,
+        },
       }
     );
+
+    // await NFT.findOneAndUpdate(
+    //   { tokenId: order.tokenId },
+    //   {
+    //     status: statusNFT.ONSTOCK,
+    //     walletOwner: user.walletAddress
+    //   }
+    // );
 
     const orders = await EventOrderAdd.find({});
 
