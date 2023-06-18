@@ -6,7 +6,6 @@ import { vietnamTimezone } from "../utility/vietnam_timezone.js";
 import { utcToZonedTime } from "date-fns-tz";
 import Auction from "../models/auction.js";
 import Image from "../models/image.js";
-import Sharp from "sharp";
 import formidable from "formidable";
 import fs from "fs";
 import { openLootBox } from "../utility/open_loot_box.js";

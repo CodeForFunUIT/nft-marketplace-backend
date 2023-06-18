@@ -11,9 +11,6 @@
   },
   "author": "",
   "license": "ISC",
-  "engines": {
-    "node": ">=14"
-  },
   "dependencies": {
     "alchemy-sdk": "^2.8.3",
     "axios": "^1.4.0",
