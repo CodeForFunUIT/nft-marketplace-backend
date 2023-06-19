@@ -40,7 +40,7 @@ router.post("/updateUri", updateUri)
 router.post("/login",login)
 router.post("/register",register)
 router.get("/verify/:uniqueEmailId", verify)
-router.get("/getUser",getUser)
+router.get("/getUser",authToken ,getUser)
 router.post("/importWallet",importWallet)
 router.post("/changePassword",changePassword)
 export default router;

@@ -14,8 +14,8 @@ import WalletSchema from "../models/wallet.js";
 
 export const addNFT = async (req, res) => {
   try {
-    const { tokenId, userId, walletAddress } = req.body
-
+    const { tokenId, walletAddress } = req.body
+    const  userId = req.userId
     const catalyst = openLootBox();
     console.log(catalyst)
 

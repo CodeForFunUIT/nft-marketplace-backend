@@ -1,4 +1,5 @@
 import express from "express";
+import { authToken } from "../middleware/authorization.js";
 const router = express.Router();
 
 import {
@@ -17,7 +18,7 @@ import {
 import { sortByNFT } from "../utility/enum.js";
 import upload from "../middleware/upload_image.js";
 
-router.post("/addNFT", addNFT)
+router.post("/addNFT",authToken, addNFT)
 router.get("/getNFTs",getNFTs)
 router.post("/updateOwner",updateOwner)
 router.post("/updateUri",updateUri)

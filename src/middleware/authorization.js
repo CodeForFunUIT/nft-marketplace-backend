@@ -12,6 +12,7 @@ export const authToken = (req, res, next) => {
 
   Jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, data) => {
     if(err) return HttpMethodStatus.forbidden(res, err.message);
+    req.userId = data.id;
     next();
   });  
 }

@@ -42,21 +42,10 @@ export const getUserByAddressOwner = async (req, res) => {
 
 export const getUser = async (req, res) => {
   try {
-    const authorizationHeader = req.headers['authorization'];
-    if (!authorizationHeader) {
-      return HttpMethodStatus.forbidden(res, 'missing header authorization')
-    }
-    const token = authorizationHeader.split(' ')[1];
-    if (!token) return HttpMethodStatus.unAuthenticated(res, 'missing token');
+    const userId  = req.userId
 
-    Jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, data) => {
-      if (err) return HttpMethodStatus.forbidden(res, err.message);
-      if (data) {
-        const user = await User.findById(data.id)
-        if (user) return HttpMethodStatus.ok(res, 'get user success', user)
-        else return HttpMethodStatus.badRequest(res, 'user not exist')
-      }
-    });
+    const user = await User.findById(userId)
+    return HttpMethodStatus.ok(res, 'get user success', user)
   } catch (error) {
     return HttpMethodStatus.badRequest(res, `error on ${error.message}`)
   }
@@ -435,7 +424,7 @@ export const login = async (req, res) => {
 
     user.comparePassword(password, (err, isMatch) => {
       if (isMatch) {
-        const accessToken = Jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '600s' },)
+        const accessToken = Jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '6000s' },)
 
         return res.status(200).send({
           success: true,
