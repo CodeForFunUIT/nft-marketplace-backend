@@ -21,8 +21,6 @@ export const addNFT = async (req, res) => {
 
     // await Image.find({catalyst})
 
-
-
     const randomImage = await Image.aggregate([
       { $match: { isUse: false, catalyst: catalyst } },
       { $sample: { size: 1 } }
