@@ -45,6 +45,7 @@ export const addOrder = async (req, res) => {
           orderId: eventMarketPlace[newIndex].args[0],
           walletOwner: "0x9b8ce88feac9ca68ab3f5c393177d83134b6c00c",
           owner: null,
+          seller: sellerAddress._id,
         },
       }
     ).exec();
