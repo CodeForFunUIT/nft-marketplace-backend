@@ -7,6 +7,7 @@ import NFT from "../models/nft.js";
 import { statusNFT } from "../utility/enum.js";
 import { contractMarketPlace } from "../utility/contract.js";
 import WalletSchema from "../models/wallet.js"
+import mongoose from "mongoose";
 import schedule from "node-schedule";
 import { utcToZonedTime } from "date-fns-tz";
 import { vietnamTimezone } from "../utility/vietnam_timezone.js";
@@ -430,6 +431,7 @@ export const executeOrder = async (req, res) => {
         price: 0,
         walletOwner: wallet.walletAddress.toLowerCase(),
         orderId: 0,
+        seller: mongoose.Types.ObjectId("648fce0ac17d70451ccd6798"),
       }
     );
 
