@@ -432,6 +432,9 @@ export const executeOrder = async (req, res) => {
         orderId: 0,
       }
     );
+
+    if(!nft) return HttpMethodStatus.badRequest(res, `orderId not exist: ${orderId}`)
+
     const listNFT = await NFT.find({ walletOwner: wallet.walletAddress }).select(
       "_id tokenId orderId uri name price"
     );
