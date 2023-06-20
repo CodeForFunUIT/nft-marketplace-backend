@@ -12,14 +12,11 @@ import { openLootBox } from "../utility/open_loot_box.js";
 import { Wallet } from "ethers";
 import WalletSchema from "../models/wallet.js";
 
-export const addNFT = async (req, res) => {
+export const mintNFT = async (req, res) => {
   try {
-    const { tokenId, walletAddress } = req.body
+    const { tokenId, walletAddress, isPaid } = req.body
     const  userId = req.userId
     const catalyst = openLootBox();
-    console.log(catalyst)
-
-    // await Image.find({catalyst})
 
     const randomImage = await Image.aggregate([
       { $match: { isUse: false, catalyst: catalyst } },
@@ -29,9 +26,6 @@ export const addNFT = async (req, res) => {
     if (randomImage.length > 0) {
 
       const selectedImage = randomImage[0];
-      // const image = await Image.findByIdAndUpdate(selectedImage._id, {
-      //   isUse: true
-      // }, { new: true })
 
       /// TODO đang suy nghĩ nên cho lặp ảnh hay không
       ///      nếu có thì set isUse: true
@@ -40,7 +34,22 @@ export const addNFT = async (req, res) => {
       const findNFT = await NFT.findOne({tokenId: tokenId})
       if(findNFT) return HttpMethodStatus.badRequest(res, `this nft is exist with tokenId: ${tokenId}`)
 
+
+      if(!isPaid){
+        const currentDate = new Date();
+        const vietnamTimeOffset = 7 * 60 * 60 * 1000; 
+        const vietnamTime = new Date(currentDate.getTime() + vietnamTimeOffset);
+        const nextFreeMint = new Date(currentDate.getTime() + vietnamTimeOffset)
+        nextFreeMint.setDate(currentDate.getDate() + 1); // Thêm một ngày
+        nextFreeMint.setHours(14, 0, 0, 0); // Đặt giờ thành 7:00:00 AM
+        
+        await User.findByIdAndUpdate(userId, {
+          lastFreeMint: vietnamTime.toJSON(),
+          nextFreeMint: nextFreeMint.toJSON()
+        })
+      }
       const user = await User.findById(userId)
+
       if (!user) return HttpMethodStatus.badRequest(res, `not exist user with id: ${userId}`)
 
       const wallet = await WalletSchema.findOne({ walletAddress: walletAddress.toLowerCase() })

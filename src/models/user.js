@@ -70,6 +70,12 @@ const userSchema = new mongoose.Schema({
   isVerified: {
     type: Boolean,
     default: false,
+  },
+  lastFreeMint:{
+    type: String,
+  },
+  nextFreeMint :{
+    type: String,
   }
 })
 

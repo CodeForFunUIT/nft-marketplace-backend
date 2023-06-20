@@ -3,7 +3,7 @@ import { authToken } from "../middleware/authorization.js";
 const router = express.Router();
 
 import {
-  addNFT,
+  mintNFT,
   getNFTs,
   updateOwner,
   updateUri,
@@ -18,7 +18,7 @@ import {
 import { sortByNFT } from "../utility/enum.js";
 import upload from "../middleware/upload_image.js";
 
-router.post("/addNFT",authToken, addNFT)
+router.post("/mintNFT",authToken, mintNFT)
 router.get("/getNFTs",getNFTs)
 router.post("/updateOwner",updateOwner)
 router.post("/updateUri",updateUri)
