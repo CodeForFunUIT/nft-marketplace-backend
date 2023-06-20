@@ -41,7 +41,7 @@ export const mintNFT = async (req, res) => {
         const vietnamTime = new Date(currentDate.getTime() + vietnamTimeOffset);
         const nextFreeMint = new Date(currentDate.getTime() + vietnamTimeOffset)
         nextFreeMint.setDate(currentDate.getDate() + 1); // Thêm một ngày
-        nextFreeMint.setHours(14, 0, 0, 0); // Đặt giờ thành 7:00:00 AM
+        nextFreeMint.setHours(7, 0, 0, 0); // Đặt giờ thành 7:00:00 AM
         
         await User.findByIdAndUpdate(userId, {
           lastFreeMint: vietnamTime.toJSON(),
