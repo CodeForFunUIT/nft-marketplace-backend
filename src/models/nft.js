@@ -43,7 +43,7 @@ const nftSchema = new mongoose.Schema({
     },
     paymentToken: {
         type: String,
-        default: "0xFf24e9Ce8D1c32f01B24bE7b1C9BED386D43c22F",
+        default: "0x006B385edB7B58037Dba2796b122871B3208C03f",
     },
     favorite:{
         type: Number,
