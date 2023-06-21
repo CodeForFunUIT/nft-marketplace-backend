@@ -4,7 +4,7 @@ import EventOrderAdd from "../models/event_order_add.js";
 import ethers from "ethers";
 import User from "../models/user.js";
 import NFT from "../models/nft.js";
-import { statusNFT } from "../utility/enum.js";
+import { statusNFT,address } from "../utility/enum.js";
 import { contractMarketPlace } from "../utility/contract.js";
 import WalletSchema from "../models/wallet.js"
 import mongoose from "mongoose";
@@ -43,7 +43,7 @@ export const addOrder = async (req, res) => {
           price: eventMarketPlace[newIndex].args[4],
           status: statusNFT.SELLING,
           orderId: eventMarketPlace[newIndex].args[0],
-          walletOwner: "0x9b8ce88feac9ca68ab3f5c393177d83134b6c00c",
+          walletOwner: address.ADDRESS_MERKETPLACE,
           owner: null,
           seller: sellerAddress._id,
         },
@@ -267,7 +267,7 @@ export const addOrdersFromBlochainToMongo = async (req, res) => {
           status: statusNFT.SELLING,
           price: order.price,
           orderId: order.orderId,
-          walletOwner: "0x9b8CE88feAc9CA68AB3F5C393177D83134b6C00c".toLowerCase(),
+          walletOwner: address.ADDRESS_MERKETPLACE.toLowerCase(),
           owner: null,
           seller: seller._id,
         })

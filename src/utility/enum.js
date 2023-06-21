@@ -1,55 +1,70 @@
 const statusNFT = {
-    SELLING: 'selling',
-    ONSTOCK: 'onStock',
-    AUCTION: 'auction',
-}
+  SELLING: "selling",
+  ONSTOCK: "onStock",
+  AUCTION: "auction",
+};
 
 const activityType = {
-    LIKE_NFT: 'likeNFT',
-    AUCTION_NFT: 'auctionNFT',
-}
+  LIKE_NFT: "likeNFT",
+  AUCTION_NFT: "auctionNFT",
+};
 
 const event = {
-    ADD_ORDER: 'OrderAdded',
-    CANCEL_ORDER: 'OrderCancelled',
-    MATCH_ORDER: 'OrderMatched',
-}
+  ADD_ORDER: "OrderAdded",
+  CANCEL_ORDER: "OrderCancelled",
+  MATCH_ORDER: "OrderMatched",
+};
 
 const sortByNFT = {
-    LOWEST_PRICE: 'Lowest Price',
-    HIGHEST_PRICE: 'Highest Price',
-    RECENTLY_SOLD:'Recently Sold',
-    MOST_LIKED:"Most Liked",
-    MOST_RECENT:"Most Recent",
-    OLDEST:"Oldest"
-}
+  LOWEST_PRICE: "Lowest Price",
+  HIGHEST_PRICE: "Highest Price",
+  RECENTLY_SOLD: "Recently Sold",
+  MOST_LIKED: "Most Liked",
+  MOST_RECENT: "Most Recent",
+  OLDEST: "Oldest",
+};
 
 const tagsNFT = {
-    WEAPON: 'weapon',
-    ANIMAL: 'animal',
-    POTION: 'potion',
-    JEWELRY: 'jewelry',
-}
+  WEAPON: "weapon",
+  ANIMAL: "animal",
+  POTION: "potion",
+  JEWELRY: "jewelry",
+};
 
 const subTagsNFT = {
-    SWORD: 'sword',
-    ARMOR: 'armor',
-    BOW: 'bow',
-    CROWN: 'crown',
-    DRAGON: 'dragon',
-    HEAL_POTION: 'heal_potion',
-    MANA_POTION: 'mana_potion',
-    HORSE: 'horse',
-    KNIFE: 'knife',
-    RING: 'ring',
-    SHIELD: 'shield',
-}
+  SWORD: "sword",
+  ARMOR: "armor",
+  BOW: "bow",
+  CROWN: "crown",
+  DRAGON: "dragon",
+  HEAL_POTION: "heal_potion",
+  MANA_POTION: "mana_potion",
+  HORSE: "horse",
+  KNIFE: "knife",
+  RING: "ring",
+  SHIELD: "shield",
+};
 
 const catalystType = {
-    COMMON: 'common',
-    RARE: 'rare',
-    EPIC: 'epic',
-    LEGENDARY: 'legendary'
-}
+  COMMON: "common",
+  RARE: "rare",
+  EPIC: "epic",
+  LEGENDARY: "legendary",
+};
 
-export  {statusNFT, event,sortByNFT, activityType ,tagsNFT, subTagsNFT, catalystType};
+const address = {
+  ADDRESS_MERKETPLACE: "0x3Aa1c2c02FE5fD4340aF66A37401Eb48F703b9F5",
+  ADDRESS_NNG_TOKEN: "0x006B385edB7B58037Dba2796b122871B3208C03f",
+  ADDRESS_NFT: "0x2e09D13B2bF47D280d9dfde93aBC8c07D0fd4fDa",
+};
+
+export {
+  statusNFT,
+  event,
+  sortByNFT,
+  activityType,
+  tagsNFT,
+  subTagsNFT,
+  catalystType,
+  address,
+};
