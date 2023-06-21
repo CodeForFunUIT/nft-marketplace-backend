@@ -17,7 +17,7 @@ import { ethers } from "ethers";
 import { Server } from "socket.io";
 import EventOrderAdd from "./models/event_order_add.js";
 import NFT from "./models/nft.js";
-import { statusNFT } from "./utility/enum.js";
+import { statusNFT, address } from "./utility/enum.js";
 dotenv.config({path: './config/config.env'})
 
 
@@ -74,28 +74,28 @@ contract.on(filterAddOrder, async (orderId, seller, tokenId, paymentToken,price)
   console.log(`paymentToken: ${paymentToken}`);
   console.log(`price: ${price}`);
 
-  const nft = await NFT.findOneAndUpdate(
-    {'tokenId': tokenId},
-    {"$set": {price: price, 
-        status: statusNFT.SELLING,
-        orderId: orderId,}
-    }).exec();
+  // const nft = await NFT.findOneAndUpdate(
+  //   {'tokenId': tokenId},
+  //   {"$set": {price: price, 
+  //       status: statusNFT.SELLING,
+  //       orderId: orderId,}
+  //   }).exec();
 
-  const event = EventOrderAdd.findOne({tokenId: tokenId})
-  if(event){
-    return ;
-  }
-  const newEventOrderAdd = new EventOrderAdd({
-    transactionHash: eventMarketPlace[newIndex].transactionHash,
-    orderId: orderId,
-    seller : seller.toLowerCase(),
-    tokenId :tokenId,
-    paymentToken :paymentToken,
-    price :price,
-    status: statusNFT.SELLING,
-    name: nft.name,
-    uri: nft.uri,
-});
+//   const event = EventOrderAdd.findOne({tokenId: tokenId})
+//   if(event){
+//     return ;
+//   }
+//   const newEventOrderAdd = new EventOrderAdd({
+//     transactionHash: eventMarketPlace[newIndex].transactionHash,
+//     orderId: orderId,
+//     seller : seller.toLowerCase(),
+//     tokenId :tokenId,
+//     paymentToken :paymentToken,
+//     price :price,
+//     status: statusNFT.SELLING,
+//     name: nft.name,
+//     uri: nft.uri,
+// });
 
   ///Save event
   //  newEventOrderAdd.save((error, data) => {
