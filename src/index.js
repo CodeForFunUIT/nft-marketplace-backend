@@ -8,7 +8,7 @@ import userRouter from "./routers/user_router.js"
 import nftRouter from "./routers/nft_router.js"
 import imageRouter from "./routers/image_router.js"
 import activityRouter from "./routers/activity_router.js"
-import utilRouter from "./routers/utils_router.js"
+// import utilRouter from "./routers/utils_router.js"
 
 import Jwt  from "jsonwebtoken";
 import {authToken} from "./middleware/authorization.js";
@@ -161,7 +161,7 @@ contract.on(filterMatchOrder, (orderId,seller,buyer,tokenId,paymentToken,price) 
   app.use("/nft", nftRouter)
   app.use("/image",imageRouter)
   app.use("/activity",activityRouter)
-  app.use("/utils",utilRouter)
+  // app.use("/utils",utilRouter)
 
   app.get('/books',authToken, (req, res) => {
     res.json({status: 'Success', data: books})
