@@ -1,12 +1,12 @@
 import mongoose from "mongoose";
 
 const auctionSchema = new mongoose.Schema({
-    nft:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'NFT'
-    },
     seller:{
-        typer: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    sellerAddress:{
+        type: String,
     },
     listAuction: {
         type: Array,
@@ -23,7 +23,7 @@ const auctionSchema = new mongoose.Schema({
     },
     winner:{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
+        ref: 'Wallet'
     },
     timeOutAuction: {
         type: Number,

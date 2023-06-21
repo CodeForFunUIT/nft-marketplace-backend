@@ -10,8 +10,6 @@ import {
   removeTokenId,
   changeName,
   getUserByAddressOwner,
-  getMyAuction,
-  getWinnerAuction,
   likeNFT,
   dislikeNFT,
   getWishListNFT,
@@ -28,8 +26,6 @@ router.get("/getUsers",getAllUser)
 router.post("/getNFTUserFromMongo",getNFTUserFromMongo)
 router.post("/getWishListNFT", getWishListNFT)
 router.post("/getUserByAddressOwner",getUserByAddressOwner)
-router.post("/getMyAuction",getMyAuction)
-router.post("/getWinnerAuction",getWinnerAuction)
 router.post("/isUserExist",isUserExist)
 router.post('/addTokenId', addTokenId)
 router.post("/removeTokenId",removeTokenId)

@@ -280,70 +280,7 @@ export const sortNFT = async (req, res) => {
   }
 };
 
-export const auctionNFT = async (req, res) => {
-  try {
-    const data = req.body;
-    const walletAddress = data.walletAddress.toLowerCase();
-    const currentDate = utcToZonedTime(new Date(), vietnamTimezone);
-    const timestampNow = currentDate.getTime();
-
-    const nftAuction = await NFT.findOne({ tokenId: data.tokenId });
-
-    const auction = await Auction.findOne({ nft: nftAuction._id });
-
-    if (!auction) {
-      return HttpMethodStatus.badRequest(res, "auction note exist");
-    }
-
-    if (timestampNow >= auction.endAuction) {
-      return HttpMethodStatus.badRequest(res, "auction was ended");
-    }
-
-    if (data.price < auction.minPrice) {
-      return HttpMethodStatus.badRequest(
-        res,
-        `minimum price is ${auction.minPrice}`
-      );
-    }
-    if (
-      auction.listAuction.length !== 0 &&
-      data.price < auction.listAuction[auction.listAuction.length - 1]
-    ) {
-      return HttpMethodStatus.badRequest(
-        res,
-        "new price must not small than previous price"
-      );
-    }
-    const updateAuction = await Auction.findByIdAndUpdate(
-      auction._id,
-      {
-        $push: {
-          listAuction: {
-            walletAddress: walletAddress,
-            price: data.price,
-            time: timestampNow,
-          },
-        },
-      },
-      { new: true }
-    )
-      .exec()
-      .populate({
-        path: "nft",
-        select: "_id tokenId orderId owner uri name price favorite",
-      });
-    return HttpMethodStatus.ok(
-      res,
-      `auction success by ${walletAddress}`,
-      updateAuction
-    );
-  } catch (error) {
-    return HttpMethodStatus.badRequest(res, error.message);
-  }
-};
-
 export const uploadImageNFT = async (req, res) => {
-
   try {
     const form = new formidable.IncomingForm({ multiples: true });
 

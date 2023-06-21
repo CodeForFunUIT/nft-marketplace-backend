@@ -104,44 +104,6 @@ export const changeName = async (req, res) => {
   }
 };
 
-/// lấy danh sách NFT mà tôi đang rao bán đấu giá
-export const getMyAuction = async (req, res) => {
-  try {
-    const { address } = req.data;
-
-    const auctions = await Auction.find({ seller: address })
-      .populate({
-        nft: "nft",
-        select: "_id tokenId orderId owner uri name price favorite",
-      })
-      .populate({ path: "winner", select: "_id walletAddress name" });
-
-    return HttpMethodStatus.ok(res, "get list auction success", auctions);
-  } catch (error) {
-    return HttpMethodStatus.badRequest(res, error.message);
-  }
-};
-
-/// lấy danh sách NFT mà tôi đấu giá thành công
-export const getWinnerAuction = async (req, res) => {
-  try {
-    const { address } = req.data;
-
-    const user = await User.findOne({ walletAddress: address.toLowerCase() });
-    if (!user) {
-      return HttpMethodStatus.badRequest(res, "user not exist");
-    }
-    const auctions = await Auction.find({ winner: user._id }).populate({
-      nft: "nft",
-      select: "_id tokenId orderId owner uri name price favorite",
-    });
-
-    return HttpMethodStatus.ok(res, "get list auction success", auctions);
-  } catch (error) {
-    return HttpMethodStatus.badRequest(res, error.message);
-  }
-};
-
 /// TODO not use
 export const addTokenId = async (req, res) => {
   try {

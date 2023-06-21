@@ -23,6 +23,10 @@ const nftSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Image"
     },
+    auction: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Auction"
+    },
     uri: {
         type: String,
     },

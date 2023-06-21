@@ -10,7 +10,6 @@ import {
   updateStatusToStock,
   filterMinMaxNFT,
   sortNFT,
-  auctionNFT,
   uploadImageNFT,
   getNFTByTokenId,
   filterNFT,
@@ -25,7 +24,6 @@ router.post("/updateUri",updateUri)
 router.post("/updateStatusToStock",updateStatusToStock)
 router.post("/filterMinMaxNFT",filterMinMaxNFT)
 router.post("/sortNFT",sortNFT)
-router.post("/auctionNFT",auctionNFT)
 router.get("/getNFTByTokenId/:tokenId",getNFTByTokenId)
 router.post("/uploadImageNFT", uploadImageNFT)
 router.post("/filterNFT",filterNFT)

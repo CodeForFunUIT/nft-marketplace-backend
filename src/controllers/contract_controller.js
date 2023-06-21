@@ -20,13 +20,13 @@ export const addOrder = async (req, res) => {
     );
     const newIndex = eventMarketPlace.length - 1;
 
-    const isContractExist = await EventOrderAdd.findOne({
-      orderId: eventMarketPlace[newIndex].args[0],
-    });
+    // const isContractExist = await EventOrderAdd.findOne({
+    //   orderId: eventMarketPlace[newIndex].args[0],
+    // });
 
-    if (isContractExist) {
-      return HttpMethodStatus.badRequest(res, "orderId exist");
-    }
+    // if (isContractExist) {
+    //   return HttpMethodStatus.badRequest(res, "orderId exist");
+    // }
     // const nft = await NFT.findOneAndUpdate({'nftID': eventMarketPlace[newIndex].args[2]},
     // {"$set": {price: 250000000000000000000, status: "onStock", addressOwner: eventMarketPlace[newIndex].args[1].toLowerCase()}}).exec();
 
@@ -50,27 +50,29 @@ export const addOrder = async (req, res) => {
       }
     ).exec();
 
-    const newEventOrderAdd = new EventOrderAdd({
-      transactionHash: eventMarketPlace[newIndex].transactionHash,
-      orderId: eventMarketPlace[newIndex].args[0],
-      nft: nft._id,
-      seller: eventMarketPlace[newIndex].args[1].toLowerCase(),
-      // buyer :eventMarketPlace[newIndex].args[2],
-      tokenId: eventMarketPlace[newIndex].args[2],
-      paymentToken: eventMarketPlace[newIndex].args[3],
-      price: eventMarketPlace[newIndex].args[4],
-      status: statusNFT.SELLING,
-      name: nft.name,
-      uri: nft.uri,
-    });
+    return HttpMethodStatus.created(res, "add order success!", nft);
+
+
+    // const newEventOrderAdd = new EventOrderAdd({
+    //   transactionHash: eventMarketPlace[newIndex].transactionHash,
+    //   orderId: eventMarketPlace[newIndex].args[0],
+    //   nft: nft._id,
+    //   seller: eventMarketPlace[newIndex].args[1].toLowerCase(),
+    //   // buyer :eventMarketPlace[newIndex].args[2],
+    //   tokenId: eventMarketPlace[newIndex].args[2],
+    //   paymentToken: eventMarketPlace[newIndex].args[3],
+    //   price: eventMarketPlace[newIndex].args[4],
+    //   status: statusNFT.SELLING,
+    //   name: nft.name,
+    //   uri: nft.uri,
+    // });
 
     ///Save event
-    await newEventOrderAdd.save((error, data) => {
-      if (error) {
-        return HttpMethodStatus.badRequest(res, error.message);
-      }
-      HttpMethodStatus.created(res, "add order success!", data);
-    });
+    // await newEventOrderAdd.save((error, data) => {
+    //   if (error) {
+    //     return HttpMethodStatus.badRequest(res, error.message);
+    //   }
+    // });
   } catch (error) {
     return HttpMethodStatus.internalServerError(res, error.message);
   }
@@ -467,48 +469,33 @@ export const cancelOrder = async (req, res) => {
   try {
     const { orderId } = req.body;
 
-    const order = await EventOrderAdd.findOne({ orderId: orderId });
-    if (!order) {
-      return HttpMethodStatus.badRequest(res, "order not exist");
+    const nft = await NFT.findOne({orderId: orderId})
+
+    if(!nft){
+      return HttpMethodStatus.badRequest(res, `nft not exist with orderId: ${orderId}`)
     }
 
-    await EventOrderAdd.findOneAndDelete({ orderId: orderId });
+    const walletOwner = await WalletSchema.findById(nft.seller._id)
 
-    const wallet = await WalletSchema.findOne({ walletAddress: order.seller.toLowerCase() })
+    if(!walletOwner) return HttpMethodStatus.badRequest(res, `wallet not exist ${walletOwner.walletAddress}`)
 
-    if (!wallet) {
-      return HttpMethodStatus.badRequest(res, `wallet not exist with address: ${order.seller}`)
-    }
-
-    const user = await User.findById(wallet.owner._id);
-    if (!user) {
-      return HttpMethodStatus.badRequest(res, "user not exist")
-    }
-
-    const nft = await NFT.findOneAndUpdate(
-      { tokenId: order.tokenId },
+    await NFT.findOneAndUpdate(
+      { orderId: orderId },
       {
         $set: {
           price: 0,
           status: statusNFT.ONSTOCK,
           orderId: 0,
-          walletOwner: order.seller,
-          owner: user._id,
+          walletOwner: walletOwner.walletAddress,
+          owner: walletOwner.owner,
+          seller: mongoose.Types.ObjectId("648fce0ac17d70451ccd6798"),
         },
-      }
+      },{ new : true}
     );
 
-    // await NFT.findOneAndUpdate(
-    //   { tokenId: order.tokenId },
-    //   {
-    //     status: statusNFT.ONSTOCK,
-    //     walletOwner: user.walletAddress
-    //   }
-    // );
+    const nfts = await NFT.find({});
 
-    const orders = await EventOrderAdd.find({});
-
-    return HttpMethodStatus.ok(res, "cancel success!", orders);
+    return HttpMethodStatus.ok(res, "cancel success!", nfts);
   } catch (error) {
     return HttpMethodStatus.badRequest(res, error.message);
   }
