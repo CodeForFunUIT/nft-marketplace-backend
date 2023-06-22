@@ -47,8 +47,9 @@ export const addOrder = async (req, res) => {
           owner: null,
           seller: sellerAddress._id,
         },
-      }
-    ).exec();
+      },
+      { new : true }
+    );
 
     return HttpMethodStatus.created(res, "add order success!", nft);
 
