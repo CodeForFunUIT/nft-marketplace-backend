@@ -386,7 +386,7 @@ export const login = async (req, res) => {
 
     user.comparePassword(password, (err, isMatch) => {
       if (isMatch) {
-        const accessToken = Jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '6000s' },)
+        const accessToken = Jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '21600s' },)
 
         return res.status(200).send({
           success: true,
