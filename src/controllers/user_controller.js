@@ -45,6 +45,9 @@ export const getUser = async (req, res) => {
     const userId  = req.userId
 
     const user = await User.findById(userId)
+
+    const wallet = await WalletSchema.find({owner: user._id}).select("walletAddress")
+    user.walletList = wallet 
     return HttpMethodStatus.ok(res, 'get user success', user)
   } catch (error) {
     return HttpMethodStatus.badRequest(res, `error on ${error.message}`)
