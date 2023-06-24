@@ -38,7 +38,7 @@ router.post("/login",login)
 router.post("/register",register)
 router.get("/verify/:uniqueEmailId", verify)
 router.get("/getUser",authToken ,getUser)
-router.post("/importWallet",importWallet)
+router.post("/importWallet",authToken,importWallet)
 router.post("/changePassword",changePassword)
 router.get("/resendEmail",authToken,resendEmail)
 export default router;

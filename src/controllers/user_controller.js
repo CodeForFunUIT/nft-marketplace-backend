@@ -3,7 +3,7 @@ import User from "../models/user.js";
 import NFT from "../models/nft.js";
 import Auction from "../models/auction.js";
 import Activity from "../models/activity.js";
-import { activityType } from "../utility/enum.js";
+import { activityType, maximumWalletList } from "../utility/enum.js";
 import formidable from "formidable";
 import fs from "fs";
 import Image from "../models/image.js";
@@ -428,9 +428,15 @@ export const verify = async (req, res) => {
 
 export const importWallet = async (req, res) => {
   try {
-    const { walletAddress, signature, userId } = req.body
+    const { walletAddress, signature } = req.body
+
+    const userId = req.userId
 
     const user = await User.findById(userId)
+
+    if(user.walletList.length === maximumWalletList){
+      return HttpMethodStatus.badRequest(res, `maximum wallet for each account is 3`);
+    }
     if (!user) return HttpMethodStatus.badRequest(res, `user not exist with id: ${userId}`)
 
     const wallet = await WalletSchema.findOne({ walletAddress: walletAddress.toLowerCase() })

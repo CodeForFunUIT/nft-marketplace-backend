@@ -58,6 +58,8 @@ const address = {
   ADDRESS_NFT: "0x2e09D13B2bF47D280d9dfde93aBC8c07D0fd4fDa",
 };
 
+const maximumWalletList = 3
+
 export {
   statusNFT,
   event,
@@ -67,4 +69,5 @@ export {
   subTagsNFT,
   catalystType,
   address,
+  maximumWalletList,
 };
