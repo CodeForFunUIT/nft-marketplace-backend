@@ -20,6 +20,7 @@ import {
   getUser,
   importWallet,
   changePassword,
+  resendEmail,
 } from "../controllers/user_controller.js";
 
 router.get("/getUsers",getAllUser)
@@ -39,4 +40,5 @@ router.get("/verify/:uniqueEmailId", verify)
 router.get("/getUser",authToken ,getUser)
 router.post("/importWallet",importWallet)
 router.post("/changePassword",changePassword)
+router.get("/resendEmail",authToken,resendEmail)
 export default router;
