@@ -489,3 +489,29 @@ export const changePassword = async(req, res ) =>{
     return HttpMethodStatus.badRequest(res, `error on changePassword: ${error.message}`)
   }
 }
+
+export const resendEmail = async (req, res) =>{
+  try {
+
+    const userId = req.userId
+    
+    const user = await User.findById(userId)
+    
+    SENDMAIL(
+      {
+        from: process.env.EMAIL_NAME,
+        to: user.email,
+        subject: "Welcome to NNG Marketplace",
+        text: "Verify email to access our marketplace",
+        html: HTML_TEMPLATE(user.uniqueEmailId),
+      },
+      (info) => {
+        console.log("Email sent successfully");
+        console.log("MESSAGE ID: ", info.messageId);
+        return HttpMethodStatus.ok(res, `resend email success`, user);
+      }
+    );
+  } catch (error) {
+    return HttpMethodStatus.badRequest(res, `error on resend email: ${error.message}`)
+  }
+}
