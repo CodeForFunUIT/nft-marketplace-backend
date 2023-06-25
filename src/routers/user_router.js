@@ -12,7 +12,7 @@ import {
   getUserByAddressOwner,
   likeNFT,
   dislikeNFT,
-  getWishListNFT,
+  getFavoriteNFT,
   updateUri,
   login,
   register,
@@ -25,7 +25,7 @@ import {
 
 router.get("/getUsers",getAllUser)
 router.post("/getNFTUserFromMongo",getNFTUserFromMongo)
-router.get("/getWishListNFT",authToken, getWishListNFT)
+router.get("/getFavoriteNFT",authToken, getFavoriteNFT)
 router.post("/getUserByAddressOwner",getUserByAddressOwner)
 router.post("/isUserExist",isUserExist)
 router.post('/addTokenId', addTokenId)

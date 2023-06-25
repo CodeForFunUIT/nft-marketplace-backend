@@ -228,7 +228,7 @@ export const dislikeNFT = async (req, res) => {
   }
 };
 
-export const getWishListNFT = async (req, res) => {
+export const getFavoriteNFT = async (req, res) => {
   try {
     const userId = req.userId
 
