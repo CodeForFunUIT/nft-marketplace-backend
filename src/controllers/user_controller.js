@@ -159,14 +159,15 @@ export const removeTokenId = async (req, res) => {
 
 export const likeNFT = async (req, res) => {
   try {
-    const { tokenId, walletAddress } = req.body;
+    const { tokenId } = req.body;
+    const userId = req.userId;
     const nft = await NFT.findOne({ tokenId: tokenId });
     if (!nft) {
       return HttpMethodStatus.badRequest(res, "nft not exist");
     }
 
-    const user = await User.findOneAndUpdate(
-      { walletAddress: walletAddress.toLowerCase() },
+    const user = await User.findByIdAndUpdate(
+      userId,
       { $addToSet: { wishList: nft._id } },
       { new: true }
     ).populate({
@@ -177,18 +178,18 @@ export const likeNFT = async (req, res) => {
       return HttpMethodStatus.badRequest(res, "user not exist");
     }
 
-    const activity = new Activity({
-      nft: nft._id,
-      interactiveUser: user._id,
-      user: nft.seller,
-      type: activityType.LIKE_NFT,
-    });
+    // const activity = new Activity({
+    //   nft: nft._id,
+    //   interactiveUser: user._id,
+    //   user: nft.seller,
+    //   type: activityType.LIKE_NFT,
+    // });
 
-    await activity.save((err, activity) => {
-      if (err) {
-        return HttpMethodStatus.badRequest(res, `error on save activity`);
-      }
-    });
+    // await activity.save((err, activity) => {
+    //   if (err) {
+    //     return HttpMethodStatus.badRequest(res, `error on save activity`);
+    //   }
+    // });
 
     return HttpMethodStatus.ok(res, `like nft with tokenId: ${tokenId}`, user);
   } catch (error) {
@@ -198,14 +199,15 @@ export const likeNFT = async (req, res) => {
 
 export const dislikeNFT = async (req, res) => {
   try {
-    const { tokenId, walletAddress } = req.body;
+    const { tokenId } = req.body;
+    const userId = req.userId
     const nft = await NFT.findOne({ tokenId: tokenId });
     if (!nft) {
       return HttpMethodStatus.badRequest(res, "nft not exist");
     }
 
     const user = await User.findOneAndUpdate(
-      { walletAddress: walletAddress.toLowerCase() },
+      userId,
       { $pull: { wishList: nft._id } },
       { new: true }
     ).populate({
@@ -228,11 +230,9 @@ export const dislikeNFT = async (req, res) => {
 
 export const getWishListNFT = async (req, res) => {
   try {
-    const { walletAddress } = req.body;
+    const userId = req.userId
 
-    const user = await User.findOne({
-      walletAddress: walletAddress.toLowerCase(),
-    })
+    const user = await User.findById(userId)
       .populate({ path: "wishList" })
       .exec((err, user) => {
         if (err) {
@@ -251,7 +251,7 @@ export const getWishListNFT = async (req, res) => {
             } else {
               return HttpMethodStatus.ok(
                 res,
-                `get wish list NFT's ${walletAddress} success`,
+                `get wish list success`,
                 wishList
               );
             }
