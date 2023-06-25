@@ -452,7 +452,10 @@ export const importWallet = async (req, res) => {
       if (data) {
       const saveUser = await User.findByIdAndUpdate(
           userId,
-          { $addToSet: { walletList: data._id } },
+          { 
+            $addToSet: { walletList: data._id }, 
+            $set: {isFinishedKYC: true }  
+          },
           { new: true }
         ).populate({
           path: "walletList",

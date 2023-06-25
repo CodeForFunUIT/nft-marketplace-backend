@@ -76,6 +76,10 @@ const userSchema = new mongoose.Schema({
   },
   nextFreeMint :{
     type: String,
+  },
+  isFinishedKYC:{
+    type: Boolean,
+    default: false,
   }
 })
 
