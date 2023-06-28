@@ -16,7 +16,7 @@ import mongoose from "mongoose";
 export const addAuctionOrder = async (req, res) => {
   try {
     const { endAuction, walletAddress, minPrice, tokenId } = req.body;
-
+    const userId = req.userId
     const startDate = utcToZonedTime(new Date(), vietnamTimezone);
     const endDate = utcToZonedTime(new Date(endAuction), vietnamTimezone);
     const now = utcToZonedTime(new Date(), vietnamTimezone);
@@ -26,6 +26,12 @@ export const addAuctionOrder = async (req, res) => {
         res,
         `invalid end date ${endDate} \n now: ${now}`
       );
+    }
+
+    const nft = await NFT.findOne({tokenId: tokenId})
+
+    if(nft.auction == statusNFT.AUCTION){
+      return HttpMethodStatus.badRequest(res, `this NFT is on auction`)
     }
 
     const sellerAddress = await WalletSchema.findOne({
@@ -38,8 +44,6 @@ export const addAuctionOrder = async (req, res) => {
         `wallet address not exist with address: ${sellerAddress}`
       );
     }
-
-    const nft = await NFT.findOne({tokenId: tokenId})
 
     const auction = new Auction({
       minPrice: Number(minPrice),
@@ -60,9 +64,9 @@ export const addAuctionOrder = async (req, res) => {
             price: Number(minPrice),
             status: statusNFT.AUCTION,
             orderId: 0,
-            walletOwner: address.ADDRESS_MERKETPLACE,
-            owner: null,
-            seller: sellerAddress._id,
+            // walletOwner: address.ADDRESS_MERKETPLACE,
+            // owner: null,
+            // seller: sellerAddress._id,
             auction: data._id,
           },
         }
