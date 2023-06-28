@@ -8,6 +8,10 @@ const auctionSchema = new mongoose.Schema({
     sellerAddress:{
         type: String,
     },
+    nft:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'NFT'
+    },
     listAuction: {
         type: Array,
         default: [],
