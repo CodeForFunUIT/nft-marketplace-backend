@@ -47,7 +47,7 @@ export const addAuctionOrder = async (req, res) => {
 
     const auction = new Auction({
       minPrice: Number(minPrice),
-      endAuction: endAuction,
+      endAuction: endDate.getTime(),
       sellerAddress: sellerAddress.walletAddress,
       seller: sellerAddress.owner._id,
       nft: nft._id,
