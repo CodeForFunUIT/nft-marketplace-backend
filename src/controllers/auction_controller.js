@@ -30,7 +30,7 @@ export const addAuctionOrder = async (req, res) => {
 
     const nft = await NFT.findOne({tokenId: tokenId})
 
-    if(nft.auction == statusNFT.AUCTION){
+    if(nft.status == statusNFT.AUCTION){
       return HttpMethodStatus.badRequest(res, `this NFT is on auction`)
     }
 
@@ -159,7 +159,7 @@ export const auctionNFT = async (req, res) => {
     }
 
     if (timestampNow >= auction.endAuction) {
-      return HttpMethodStatus.badRequest(res, "auction was ended");
+      return HttpMethodStatus.badRequest(res, `auction was ended $timestampNow`);
     }
 
     if (priceNumber < auction.minPrice) {
