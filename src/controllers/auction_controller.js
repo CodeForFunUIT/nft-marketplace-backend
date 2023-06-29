@@ -159,7 +159,7 @@ export const auctionNFT = async (req, res) => {
     }
 
     if (timestampNow >= auction.endAuction) {
-      return HttpMethodStatus.badRequest(res, `auction was ended $timestampNow`);
+      return HttpMethodStatus.badRequest(res, `auction was ended ${timestampNow}`);
     }
 
     if (priceNumber < auction.minPrice) {
