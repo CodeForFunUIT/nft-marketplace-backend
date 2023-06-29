@@ -30,9 +30,9 @@ export const addAuctionOrder = async (req, res) => {
 
     const nft = await NFT.findOne({tokenId: tokenId})
 
-    if(nft.status == statusNFT.AUCTION){
-      return HttpMethodStatus.badRequest(res, `this NFT is on auction`)
-    }
+    // if(nft.status == statusNFT.AUCTION){
+    //   return HttpMethodStatus.badRequest(res, `this NFT is on auction`)
+    // }
 
     const sellerAddress = await WalletSchema.findOne({
       walletAddress: walletAddress,
@@ -159,7 +159,7 @@ export const auctionNFT = async (req, res) => {
     }
 
     if (timestampNow >= auction.endAuction) {
-      return HttpMethodStatus.badRequest(res, `auction was ended ${timestampNow}`);
+      return HttpMethodStatus.badRequest(res, `auction was ended ${timestampNow} ${auction.endAuction}`);
     }
 
     if (priceNumber < auction.minPrice) {
