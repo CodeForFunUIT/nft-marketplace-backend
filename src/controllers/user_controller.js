@@ -471,29 +471,20 @@ export const importWallet = async (req, res) => {
 export const changePassword = async(req, res ) =>{
   try {
     const { password, newPassword } = req.body
-    const authorizationHeader = req.headers['authorization'];
-    if (!authorizationHeader) {
-      return HttpMethodStatus.forbidden(res, 'missing header authorization')
-    }
-    const token = authorizationHeader.split(' ')[1];
-    if (!token) return HttpMethodStatus.unAuthenticated(res, 'missing token');
 
-    Jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, data) => {
-      if (err) return HttpMethodStatus.forbidden(res, err.message);
-      if (data) {
-        const user = await User.findById(data.id)
-        if (!user) return HttpMethodStatus.badRequest(res, 'user not exist')
-        user.comparePassword(password, (err, isMatch) =>{
-          if(!isMatch) return HttpMethodStatus.badRequest(res, `your password not correct: ${password}`)
-          else{
-            user.password = newPassword
-            user.save((err, data) => {
-              if(data) return HttpMethodStatus.ok(res, `update new password success: ${newPassword}`)
-            })
-          }
+    const userid = req.userId
+
+    const user = await User.findById(userid)
+    if (!user) return HttpMethodStatus.badRequest(res, 'user not exist')
+    user.comparePassword(password, (err, isMatch) =>{
+      if(!isMatch) return HttpMethodStatus.badRequest(res, `your password not correct: ${password}`)
+      else{
+        user.password = newPassword
+        user.save((err, data) => {
+          if(data) return HttpMethodStatus.ok(res, `update new password success: ${newPassword}`)
         })
       }
-    });
+    })
   } catch (error) {
     return HttpMethodStatus.badRequest(res, `error on changePassword: ${error.message}`)
   }
