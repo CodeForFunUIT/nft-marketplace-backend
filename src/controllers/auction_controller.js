@@ -133,6 +133,7 @@ export const getAuction = async (req, res) => {
       );
 
     const auction = await Auction.findById(nft.auction._id)
+    auction.listAuction.reverse();
     // .populate({
     //   path: "",
     // });
