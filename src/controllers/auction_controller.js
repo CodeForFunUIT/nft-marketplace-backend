@@ -99,7 +99,7 @@ export const addAuctionOrder = async (req, res) => {
                 from: process.env.EMAIL_NAME,
                 to: ownerAuction.email,
                 subject: "End auction",
-                text: `Your auction nft with tokenId ${tokenId} is end`,
+                text: `Your auction nft with tokenId: ${tokenId} is end`,
                 // html: HTML_TEMPLATE(data.uniqueEmailId),
               },
               (info) => {
