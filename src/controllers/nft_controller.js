@@ -34,6 +34,11 @@ export const mintNFT = async (req, res) => {
       const findNFT = await NFT.findOne({tokenId: tokenId})
       if(findNFT) return HttpMethodStatus.badRequest(res, `this nft is exist with tokenId: ${tokenId}`)
 
+      const user = await User.findById(userId)
+      if (!user) return HttpMethodStatus.badRequest(res, `not exist user with id: ${userId}`)
+
+      const wallet = await WalletSchema.findOne({ walletAddress: walletAddress.toLowerCase() })
+      if (!wallet) return HttpMethodStatus.badRequest(res, `not exist wallet with address: ${walletAddress}`)
 
       if(!isPaid){
         const currentDate = new Date();
@@ -48,12 +53,6 @@ export const mintNFT = async (req, res) => {
           nextFreeMint: nextFreeMint.toJSON()
         })
       }
-      const user = await User.findById(userId)
-
-      if (!user) return HttpMethodStatus.badRequest(res, `not exist user with id: ${userId}`)
-
-      const wallet = await WalletSchema.findOne({ walletAddress: walletAddress.toLowerCase() })
-      if (!wallet) return HttpMethodStatus.badRequest(res, `not exist wallet with address: ${walletAddress}`)
 
       const nft = new NFT({
         tokenId: tokenId,

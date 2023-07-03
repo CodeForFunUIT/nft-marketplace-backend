@@ -86,15 +86,15 @@ export const addAuctionOrder = async (req, res) => {
 
             // if(!walletOwner) return HttpMethodStatus.badRequest(res, `wallet not exist ${walletOwner.walletAddress}`)
     
-            await NFT.findOneAndUpdate(
+            const user = await NFT.findOneAndUpdate(
               { auction: auction._id },
               { price: 0,
                 status: statusNFT.ONSTOCK,
                 orderId: 0,
-                walletOwner: walletOwner.walletAddress,
-                owner: walletOwner.owner,
-                seller: mongoose.Types.ObjectId("648fce0ac17d70451ccd6798"),
-              }
+                // walletOwner: walletOwner.walletAddress,
+                // owner: walletOwner.owner,
+                // seller: mongoose.Types.ObjectId("648fce0ac17d70451ccd6798"),
+              },{ new : true}
             );
           // return HttpMethodStatus.ok(
           //   res,
