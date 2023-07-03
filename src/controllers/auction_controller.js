@@ -12,6 +12,11 @@ import { vietnamTimezone } from "../utility/vietnam_timezone.js";
 import { contractMarketPlace } from "../utility/contract.js";
 import Auction from "../models/auction.js";
 import mongoose from "mongoose";
+import SENDMAIL from "../email/transporter.js";
+import dotenv from "dotenv";
+import HTML_TEMPLATE from "../email/content_email.js";
+
+dotenv.config({ path: "../config/config.env" });
 
 export const addAuctionOrder = async (req, res) => {
   try {
@@ -30,26 +35,28 @@ export const addAuctionOrder = async (req, res) => {
 
     const nft = await NFT.findOne({tokenId: tokenId})
 
+    if(!nft) return HttpMethodStatus.badRequest(res, `nft not exist with tokenId: ${tokenId}`)
+
     // if(nft.status == statusNFT.AUCTION){
     //   return HttpMethodStatus.badRequest(res, `this NFT is on auction`)
     // }
 
-    const sellerAddress = await WalletSchema.findOne({
-      walletAddress: walletAddress,
+    const sellerWallet = await WalletSchema.findOne({
+      walletAddress: walletAddress.toLowerCase(),
     });
 
-    if (!sellerAddress) {
+    if (!sellerWallet) {
       return HttpMethodStatus.badRequest(
         res,
-        `wallet address not exist with address: ${sellerAddress}`
+        `wallet address not exist with address: ${sellerWallet}`
       );
     }
 
     const auction = new Auction({
       minPrice: Number(minPrice),
       endAuction: endDate.getTime(),
-      sellerAddress: sellerAddress.walletAddress,
-      seller: sellerAddress.owner._id,
+      sellerAddress: sellerWallet.walletAddress,
+      seller: sellerWallet.owner._id,
       nft: nft._id,
     });
 
@@ -63,52 +70,78 @@ export const addAuctionOrder = async (req, res) => {
           $set: {
             price: Number(minPrice),
             status: statusNFT.AUCTION,
-            orderId: 0,
-            // walletOwner: address.ADDRESS_MERKETPLACE,
-            // owner: null,
-            // seller: sellerAddress._id,
             auction: data._id,
           },
         }
       ).exec();
-
-      if (!nft) {
-        return HttpMethodStatus.badRequest(res, "nft not exist");
-      }
       schedule.scheduleJob(endDate, async () => {
         const auction = await Auction.findById(data._id);
         const sortNFT = auction.listAuction.sort(
           (a, b) => Number(b.price) - Number(a.price)
         );
-        /// nếu không có ai đấu giá
-        if (sortNFT.length === 0) {
-            const walletOwner = await WalletSchema.findById(nft.seller._id)
 
-            // if(!walletOwner) return HttpMethodStatus.badRequest(res, `wallet not exist ${walletOwner.walletAddress}`)
-    
-            const user = await NFT.findOneAndUpdate(
+        const ownerAuction = await User.findById(sellerWallet.owner._id)
+
+        if(!ownerAuction){
+          console.log('user not exist')
+        }
+        /// nếu không có ai đấu giá
+        if (sortNFT.length === 0) {    
+            const nft = await NFT.findOneAndUpdate(
               { auction: auction._id },
               { price: 0,
                 status: statusNFT.ONSTOCK,
-                orderId: 0,
-                // walletOwner: walletOwner.walletAddress,
-                // owner: walletOwner.owner,
-                // seller: mongoose.Types.ObjectId("648fce0ac17d70451ccd6798"),
               },{ new : true}
             );
-          // return HttpMethodStatus.ok(
-          //   res,
-          //   "Auction end NFT no one auction",
-          //   seller
-          // );
+
+            SENDMAIL(
+              {
+                from: process.env.EMAIL_NAME,
+                to: ownerAuction.email,
+                subject: "End auction",
+                text: `Your auction nft with tokenId ${tokenId} is end`,
+                // html: HTML_TEMPLATE(data.uniqueEmailId),
+              },
+              (info) => {
+                console.log("Email sent successfully");
+                console.log("MESSAGE ID: ", info.messageId);
+              }
+            );
         } else {
           const buyer = sortNFT[0].walletAddress;
-          const userBuy = await WalletSchema.findOne({
+          const winnerAddress = await WalletSchema.findOne({
             walletAddress: buyer.toLowerCase(),
           });
           await Auction.findByIdAndUpdate(
             auction._id,
-            { winner: userBuy._id, timeOutAuction: endDate.getTime() + 86400000 }
+            { winner: winnerAddress._id, timeOutAuction: endDate.getTime() + 86400000 }
+          );
+          const userBuy = await User.findById(winnerAddress.owner._id)  
+          SENDMAIL(
+            {
+              from: process.env.EMAIL_NAME,
+              to: userBuy.email,
+              subject: "End auction",
+              text: `you have successfully won the auctione NFT item with tokenId ${tokenId}`,
+              html: HTML_TEMPLATE(tokenId),
+            },
+            (info) => {
+              console.log("Email sent successfully");
+              console.log("MESSAGE ID: ", info.messageId);
+            }
+          );
+          SENDMAIL(
+            {
+              from: process.env.EMAIL_NAME,
+              to: ownerAuction.email,
+              subject: "End auction",
+              text: `Your auction nft with tokenId: ${tokenId} is end`,
+              html: HTML_TEMPLATE(tokenId),
+            },
+            (info) => {
+              console.log("Email sent successfully");
+              console.log("MESSAGE ID: ", info.messageId);
+            }
           );
         }
       });
