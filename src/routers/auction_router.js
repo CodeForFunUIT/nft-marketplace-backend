@@ -1,4 +1,6 @@
 import express from "express";
+import { authToken } from "../middleware/authorization.js";
+
 import {
     addAuctionOrder,
     getMyAuction,
@@ -10,7 +12,7 @@ import {
 const router = express.Router();
 
 
-router.post("/addAuctionOrder", addAuctionOrder)
+router.post("/addAuctionOrder",authToken ,addAuctionOrder)
 router.post("/getMyAuction", getMyAuction)
 router.post("/getWinnerAuction", getWinnerAuction)
 router.post("/auctionNFT",auctionNFT)

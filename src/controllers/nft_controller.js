@@ -67,6 +67,7 @@ export const mintNFT = async (req, res) => {
         tagNFT: image.tagNFT,
         subTagNFT: image.subTagNFT,
         catalyst: image.catalyst,
+        overview: image.overview,
       })
 
         nft.save( async (err, data) => {
