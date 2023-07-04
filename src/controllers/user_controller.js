@@ -206,7 +206,7 @@ export const dislikeNFT = async (req, res) => {
       return HttpMethodStatus.badRequest(res, "nft not exist");
     }
 
-    const user = await User.findOneAndUpdate(
+    const user = await User.findByIdAndUpdate(
       userId,
       { $pull: { wishList: nft._id } },
       { new: true }
@@ -373,7 +373,7 @@ export const login = async (req, res) => {
     if (password.length < 8) {
       return HttpMethodStatus.badRequest(
         res,
-        `${password} must smaller than 8 !!!`
+        `${password} must lagger than 8 !!!`
       );
     }
 
