@@ -1147,6 +1147,17 @@ const provider = new ethers.providers.JsonRpcProvider(
   `https://goerli.infura.io/v3/${INFURA_ID}`
 );
 
+const wsProvider = new ethers.providers.WebSocketProvider(
+  `wss://goerli.infura.io/ws/v3/${INFURA_ID}`
+)
+
+export const wsContractMarketPlace = new ethers.Contract(
+  addressMarketPlace,
+  ERC20_ABI_marketPlace,
+  wsProvider
+);
+
+
 export const contractMarketPlace = new ethers.Contract(
   addressMarketPlace,
   ERC20_ABI_marketPlace,

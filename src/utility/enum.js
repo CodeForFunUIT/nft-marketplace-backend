@@ -59,6 +59,7 @@ const address = {
 };
 
 const maximumWalletList = 3
+const durationTrick = 2000
 
 export {
   statusNFT,
@@ -70,4 +71,5 @@ export {
   catalystType,
   address,
   maximumWalletList,
+  durationTrick,
 };
