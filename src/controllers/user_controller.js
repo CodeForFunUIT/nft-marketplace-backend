@@ -354,9 +354,10 @@ export const register = async (req, res) => {
           (info) => {
             console.log("Email sent successfully");
             console.log("MESSAGE ID: ", info.messageId);
+            return HttpMethodStatus.ok(res, `save user success`, data);            
           }
         );
-        return HttpMethodStatus.ok(res, `save user success`, data);
+        // return HttpMethodStatus.ok(res, `save user success`, data);
       }
     });
   } catch (error) {
