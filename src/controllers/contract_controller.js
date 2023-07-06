@@ -43,7 +43,7 @@ export const addOrder = async (req, res) => {
 
 
     setTimeout(async () => {
-    const nft = await NFT.findOneAndUpdate(
+    const nft = await NFT.findOne(
       { tokenId: eventMarketPlace[newIndex].args[2] },
       // {
       //   $set: {
