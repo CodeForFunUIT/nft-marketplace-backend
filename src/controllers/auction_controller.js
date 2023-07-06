@@ -25,6 +25,7 @@ export const addAuctionOrder = async (req, res) => {
     const startDate = utcToZonedTime(new Date(), vietnamTimezone);
     const endDate = utcToZonedTime(new Date(endAuction), vietnamTimezone);
     const now = utcToZonedTime(new Date(), vietnamTimezone);
+    const auctionTime = 2 * 60 * 1000; // 10 phút (tính bằng milliseconds)
 
     if (now.getTime() > endDate.getTime()) {
       return HttpMethodStatus.badRequest(
@@ -74,8 +75,8 @@ export const addAuctionOrder = async (req, res) => {
           },
         }
       ).exec();
-      schedule.scheduleJob(endDate, async () => {
-        const auction = await Auction.findById(data._id);
+      setTimeout(async () => {
+ const auction = await Auction.findById(data._id);
         const sortNFT = auction.listAuction.sort(
           (a, b) => Number(b.price) - Number(a.price)
         );
@@ -103,7 +104,6 @@ export const addAuctionOrder = async (req, res) => {
                 // html: HTML_TEMPLATE(data.uniqueEmailId),
               },
               (info) => {
-                return HttpMethodStatus.ok(res, `send email success to ${ownerAuction.email}`)
                 console.log("Email sent successfully");
                 console.log("MESSAGE ID: ", info.messageId);
               }
@@ -145,8 +145,80 @@ export const addAuctionOrder = async (req, res) => {
             }
           );
         }
+      }, auctionTime);
+      schedule.scheduleJob(endDate, async () => {
+        // const auction = await Auction.findById(data._id);
+        // const sortNFT = auction.listAuction.sort(
+        //   (a, b) => Number(b.price) - Number(a.price)
+        // );
+
+        // const ownerAuction = await User.findById(sellerWallet.owner._id)
+
+        // if(!ownerAuction){
+        //   console.log('user not exist')
+        // }
+        // /// nếu không có ai đấu giá
+        // if (sortNFT.length === 0) {    
+        //     const nft = await NFT.findOneAndUpdate(
+        //       { auction: auction._id },
+        //       { price: 0,
+        //         status: statusNFT.ONSTOCK,
+        //       },{ new : true}
+        //     );
+
+        //     SENDMAIL(
+        //       {
+        //         from: process.env.EMAIL_NAME,
+        //         to: ownerAuction.email,
+        //         subject: "End auction",
+        //         text: `Your auction nft with tokenId: ${tokenId} is end`,
+        //         // html: HTML_TEMPLATE(data.uniqueEmailId),
+        //       },
+        //       (info) => {
+        //         return HttpMethodStatus.ok(res, `send email success to ${ownerAuction.email}`)
+        //         console.log("Email sent successfully");
+        //         console.log("MESSAGE ID: ", info.messageId);
+        //       }
+        //     );
+        // } else {
+        //   const buyer = sortNFT[0].walletAddress;
+        //   const winnerAddress = await WalletSchema.findOne({
+        //     walletAddress: buyer.toLowerCase(),
+        //   });
+        //   await Auction.findByIdAndUpdate(
+        //     auction._id,
+        //     { winner: winnerAddress._id, timeOutAuction: endDate.getTime() + 86400000 }
+        //   );
+        //   const userBuy = await User.findById(winnerAddress.owner._id)  
+        //   SENDMAIL(
+        //     {
+        //       from: process.env.EMAIL_NAME,
+        //       to: userBuy.email,
+        //       subject: "End auction",
+        //       text: `you have successfully won the auctione NFT item with tokenId ${tokenId}`,
+        //       html: HTML_TEMPLATE(tokenId),
+        //     },
+        //     (info) => {
+        //       console.log("Email sent successfully");
+        //       console.log("MESSAGE ID: ", info.messageId);
+        //     }
+        //   );
+        //   SENDMAIL(
+        //     {
+        //       from: process.env.EMAIL_NAME,
+        //       to: ownerAuction.email,
+        //       subject: "End auction",
+        //       text: `Your auction nft with tokenId: ${tokenId} is end`,
+        //       html: HTML_TEMPLATE(tokenId),
+        //     },
+        //     (info) => {
+        //       console.log("Email sent successfully");
+        //       console.log("MESSAGE ID: ", info.messageId);
+        //     }
+        //   );
+        // }
       });
-      // return HttpMethodStatus.ok(res, `auction success with tokenId: ${nft.tokenId}`,nft)
+      return HttpMethodStatus.ok(res, `auction success with tokenId: ${nft.tokenId}`,nft)
     });
 
   } catch (error) {
