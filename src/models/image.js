@@ -24,7 +24,10 @@ const imageSchema = new mongoose.Schema({
   },
   name:{
     type: String,
-  }
+  },
+  overview:{
+    type: String,
+  },
 });
 
 // Pre-save hook

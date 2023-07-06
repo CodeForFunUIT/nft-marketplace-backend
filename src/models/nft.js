@@ -62,6 +62,9 @@ const nftSchema = new mongoose.Schema({
     catalyst: {
         type: String
     },
+    overview: {
+        type: String
+    }
 },
 {
     timestamps: {createdAt: 'created_at'}
