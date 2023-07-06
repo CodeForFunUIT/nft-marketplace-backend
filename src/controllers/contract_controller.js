@@ -464,10 +464,12 @@ export const executeOrder = async (req, res) => {
     //   }
     // )
 
+    const wallet = await WalletSchema.findOne(
+      { walletAddress: buyer.toLowerCase() },
+    );
+    if(!wallet) return HttpMethodStatus.badRequest(res, `wallet not exist with address: ${buyer}`)
+
     setTimeout(async () => {
-      const wallet = await WalletSchema.findOne(
-        { walletAddress: buyer.toLowerCase() },
-      );
       return HttpMethodStatus.ok(res, "execute success!", wallet);
     }, durationTrick);
 

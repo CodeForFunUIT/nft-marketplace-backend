@@ -68,23 +68,24 @@ wsContractMarketPlace.on(filterCancelOrder, async (orderId) =>{
   }
 
   const nft = await NFT.findOne({orderId: transfer.orderId})
-
-  const walletOwner = await WalletSchema.findById(nft.seller._id)
-
-  await NFT.findOneAndUpdate(
-    { orderId: transfer.orderId },
-    {
-      $set: {
-        price: 0,
-        status: statusNFT.ONSTOCK,
-        orderId: 0,
-        walletOwner: walletOwner.walletAddress,
-        owner: walletOwner.owner,
-        seller: mongoose.Types.ObjectId("648fce0ac17d70451ccd6798"),
-      },
-    },{ new : true}
-  );
-
+  if(nft){
+    const walletOwner = await WalletSchema.findById(nft.seller._id)
+    if(walletOwner){
+      await NFT.findOneAndUpdate(
+        { orderId: transfer.orderId },
+        {
+          $set: {
+            price: 0,
+            status: statusNFT.ONSTOCK,
+            orderId: 0,
+            walletOwner: walletOwner.walletAddress,
+            owner: walletOwner.owner,
+            seller: mongoose.Types.ObjectId("648fce0ac17d70451ccd6798"),
+          },
+        },{ new : true}
+      );
+    }
+  }
   // console.log("cancel")
   // console.log(JSON.stringify(transfer,null,4))
 })
@@ -106,16 +107,18 @@ wsContractMarketPlace.on(filterAddOrder, async (orderId, seller, tokenId, paymen
     walletAddress: transfer.seller
   })
 
-  await NFT.findOneAndUpdate(
-    { tokenId: transfer.tokenId },
-    {
-      price: price, 
-      status: statusNFT.SELLING,
-      orderId: transfer.orderId,
-      owner: null,
-      walletOwner: address.ADDRESS_MERKETPLACE,
-      seller: wallet._id
-    });
+  if(wallet){
+    await NFT.findOneAndUpdate(
+      { tokenId: transfer.tokenId },
+      {
+        price: price, 
+        status: statusNFT.SELLING,
+        orderId: transfer.orderId,
+        owner: null,
+        walletOwner: address.ADDRESS_MERKETPLACE,
+        seller: wallet._id
+      });
+  }
 });
 /// match
 wsContractMarketPlace.on(filterMatchOrder, async (orderId,seller,buyer,tokenId,paymentToken,price) =>{
@@ -132,37 +135,41 @@ wsContractMarketPlace.on(filterMatchOrder, async (orderId,seller,buyer,tokenId,p
     walletAddress: transfer.buyer,
   });
 
-  const nft = await NFT.findOneAndUpdate(
-    { orderId: orderId },
-    {
-      owner: wallet.owner._id,
-      status: statusNFT.ONSTOCK,
-      price: 0,
-      walletOwner: wallet.walletAddress.toLowerCase(),
-      orderId: 0,
-      seller: mongoose.Types.ObjectId("648fce0ac17d70451ccd6798"),
-    }
-  );
-
-  const listNFT = await NFT.find({ walletOwner: wallet.walletAddress }).select(
-    "_id tokenId orderId uri name price"
-  );
-
-  wallet.listNFT = listNFT;
-  await WalletSchema.findOneAndUpdate(
-    { walletAddress: buyer.toLowerCase() },
-    { listNFT: listNFT },
-    { new: true }
-  );
-
-  await WalletSchema.findByIdAndUpdate(
-    nft.seller._id,
-    {
-      $pull: {
-        listNFT: nft._id
+  if(wallet){
+    const nft = await NFT.findOneAndUpdate(
+      { orderId: orderId },
+      {
+        owner: wallet.owner._id,
+        status: statusNFT.ONSTOCK,
+        price: 0,
+        walletOwner: wallet.walletAddress.toLowerCase(),
+        orderId: 0,
+        seller: mongoose.Types.ObjectId("648fce0ac17d70451ccd6798"),
       }
+    );
+
+    if(nft){
+      const listNFT = await NFT.find({ walletOwner: wallet.walletAddress }).select(
+        "_id tokenId orderId uri name price"
+      );
+    
+      wallet.listNFT = listNFT;
+      await WalletSchema.findOneAndUpdate(
+        { walletAddress: buyer.toLowerCase() },
+        { listNFT: listNFT },
+        { new: true }
+      );
+    
+      await WalletSchema.findByIdAndUpdate(
+        nft.seller._id,
+        {
+          $pull: {
+            listNFT: nft._id
+          }
+        }
+      )
     }
-  )
+  }
 
   // console.log('match');
   // console.log(JSON.stringify(transfer,null,4))
