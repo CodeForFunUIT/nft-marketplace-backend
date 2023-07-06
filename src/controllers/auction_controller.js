@@ -103,6 +103,7 @@ export const addAuctionOrder = async (req, res) => {
                 // html: HTML_TEMPLATE(data.uniqueEmailId),
               },
               (info) => {
+                return HttpMethodStatus.ok(res, `send email success to ${ownerAuction.email}`)
                 console.log("Email sent successfully");
                 console.log("MESSAGE ID: ", info.messageId);
               }
@@ -145,7 +146,7 @@ export const addAuctionOrder = async (req, res) => {
           );
         }
       });
-      return HttpMethodStatus.ok(res, `auction success with tokenId: ${nft.tokenId}`,nft)
+      // return HttpMethodStatus.ok(res, `auction success with tokenId: ${nft.tokenId}`,nft)
     });
 
   } catch (error) {
