@@ -62,123 +62,124 @@ const filterCancelOrder = wsContractMarketPlace.filters.OrderCancelled();
 const filterMatchOrder = wsContractMarketPlace.filters.OrderMatched();
 
 /// cancel
-// wsContractMarketPlace.on(filterCancelOrder, async (orderId) =>{
-//   let transfer =  {
-//     orderId: Number(orderId._hex),
-//   }
+wsContractMarketPlace.on(filterCancelOrder, async (orderId) =>{
+  let transfer =  {
+    orderId: Number(orderId._hex),
+  }
 
-//   console.log("cancel")
-//   console.log(JSON.stringify(transfer,null,4))
-//   const nft = await NFT.findOne({orderId: transfer.orderId})
-//   console.log(`nft ${nft}`)
-//   if(nft){
-//     const walletOwner = await WalletSchema.findById(nft.seller._id)
-//     console.log(`walletOwner ${walletOwner}`)
-//     if(walletOwner){
-//       nft.price = 0
-//       nft.status = statusNFT.ONSTOCK
-//       nft.orderId = 0
-//       nft.walletOwner = walletOwner.walletAddress
-//       nft.owner = walletOwner.owner._id
-//       nft.seller = mongoose.Types.ObjectId("648fce0ac17d70451ccd6798")
-//       await nft.save()
-//       // await NFT.findOneAndUpdate(
-//       //   { orderId: transfer.orderId },
-//       //   {
-//       //     $set: {
-//       //       price: 0,
-//       //       status: statusNFT.ONSTOCK,
-//       //       orderId: 0,
-//       //       walletOwner: walletOwner.walletAddress,
-//       //       owner: walletOwner.owner._id,
-//       //       seller: mongoose.Types.ObjectId("648fce0ac17d70451ccd6798"),
-//       //     },
-//       //   },
-//       // );
-//     }
-//   }
-// })
+  console.log("cancel")
+  console.log(JSON.stringify(transfer,null,4))
+  const nft = await NFT.findOne({orderId: transfer.orderId})
+  console.log(`nft ${nft}`)
+  if(nft){
+    const walletOwner = await WalletSchema.findById(nft.seller._id)
+    console.log(`walletOwner ${walletOwner}`)
+    if(walletOwner){
+      nft.price = 0
+      nft.status = statusNFT.ONSTOCK
+      nft.orderId = 0
+      nft.walletOwner = walletOwner.walletAddress
+      nft.owner = walletOwner.owner._id
+      nft.seller = mongoose.Types.ObjectId("648fce0ac17d70451ccd6798")
+      await nft.save()
+      console.log(nft)
+      // await NFT.findOneAndUpdate(
+      //   { orderId: transfer.orderId },
+      //   {
+      //     $set: {
+      //       price: 0,
+      //       status: statusNFT.ONSTOCK,
+      //       orderId: 0,
+      //       walletOwner: walletOwner.walletAddress,
+      //       owner: walletOwner.owner._id,
+      //       seller: mongoose.Types.ObjectId("648fce0ac17d70451ccd6798"),
+      //     },
+      //   },
+      // );
+    }
+  }
+})
 
-// // Đăng ký bộ lọc với provider để lắng nghe sự kiện OrderAdded
-// wsContractMarketPlace.on(filterAddOrder, async (orderId, seller, tokenId, paymentToken,price) => {
-//   let transfer =  {
-//     orderId: Number(orderId._hex),
-//     seller: seller.toLowerCase(),
-//     tokenId: Number(tokenId._hex),
-//     paymentToken: paymentToken,
-//     price: Number(price._hex),
-//   }
+// Đăng ký bộ lọc với provider để lắng nghe sự kiện OrderAdded
+wsContractMarketPlace.on(filterAddOrder, async (orderId, seller, tokenId, paymentToken,price) => {
+  let transfer =  {
+    orderId: Number(orderId._hex),
+    seller: seller.toLowerCase(),
+    tokenId: Number(tokenId._hex),
+    paymentToken: paymentToken,
+    price: Number(price._hex),
+  }
 
-//   console.log('AddOrder');
-//   console.log(JSON.stringify(transfer,null,4))
+  console.log('AddOrder');
+  console.log(JSON.stringify(transfer,null,4))
 
-//   const wallet = await WalletSchema.findOne({
-//     walletAddress: transfer.seller
-//   })
+  const wallet = await WalletSchema.findOne({
+    walletAddress: transfer.seller
+  })
 
-//   if(wallet){
-//     await NFT.findOneAndUpdate(
-//       { tokenId: transfer.tokenId },
-//       {
-//         price: transfer.price, 
-//         status: statusNFT.SELLING,
-//         orderId: transfer.orderId,
-//         owner: null,
-//         walletOwner: address.ADDRESS_MERKETPLACE,
-//         seller: wallet._id
-//       });
-//   }
-// });
-// /// match
-// wsContractMarketPlace.on(filterMatchOrder, async (orderId,seller,buyer,tokenId,paymentToken,price) =>{
-//   let transfer =  {
-//     orderId: Number(orderId._hex),
-//     seller: seller.toLowerCase(),
-//     buyer: buyer.toLowerCase(),
-//     tokenId: Number(tokenId._hex),
-//     paymentToken: paymentToken,
-//     price: Number(price._hex),
-//   }
-//   console.log('match');
-//   console.log(JSON.stringify(transfer,null,4))
-//   const wallet = await WalletSchema.findOne({
-//     walletAddress: transfer.buyer,
-//   });
+  if(wallet){
+    await NFT.findOneAndUpdate(
+      { tokenId: transfer.tokenId },
+      {
+        price: transfer.price, 
+        status: statusNFT.SELLING,
+        orderId: transfer.orderId,
+        owner: null,
+        walletOwner: address.ADDRESS_MERKETPLACE,
+        seller: wallet._id
+      });
+  }
+});
+/// match
+wsContractMarketPlace.on(filterMatchOrder, async (orderId,seller,buyer,tokenId,paymentToken,price) =>{
+  let transfer =  {
+    orderId: Number(orderId._hex),
+    seller: seller.toLowerCase(),
+    buyer: buyer.toLowerCase(),
+    tokenId: Number(tokenId._hex),
+    paymentToken: paymentToken,
+    price: Number(price._hex),
+  }
+  console.log('match');
+  console.log(JSON.stringify(transfer,null,4))
+  const wallet = await WalletSchema.findOne({
+    walletAddress: transfer.buyer,
+  });
 
-//   if(wallet){
-//     const nft = await NFT.findOneAndUpdate(
-//       { orderId: transfer.orderId },
-//       {
-//         owner: wallet.owner._id,
-//         status: statusNFT.ONSTOCK,
-//         price: 0,
-//         walletOwner: wallet.walletAddress.toLowerCase(),
-//         orderId: 0,
-//         seller: mongoose.Types.ObjectId("648fce0ac17d70451ccd6798"),
-//       }
-//     );
+  if(wallet){
+    const nft = await NFT.findOneAndUpdate(
+      { orderId: transfer.orderId },
+      {
+        owner: wallet.owner._id,
+        status: statusNFT.ONSTOCK,
+        price: 0,
+        walletOwner: wallet.walletAddress.toLowerCase(),
+        orderId: 0,
+        seller: mongoose.Types.ObjectId("648fce0ac17d70451ccd6798"),
+      }
+    );
 
-//     if(nft){
-//       const listNFT = await NFT.find({ walletOwner: wallet.walletAddress.toLowerCase() })
+    if(nft){
+      const listNFT = await NFT.find({ walletOwner: wallet.walletAddress.toLowerCase() })
     
-//       wallet.listNFT = listNFT;
-//       await WalletSchema.findOneAndUpdate(
-//         { walletAddress: transfer.buyer },
-//         { listNFT: listNFT },
-//         { new: true }
-//       );
+      wallet.listNFT = listNFT;
+      await WalletSchema.findOneAndUpdate(
+        { walletAddress: transfer.buyer },
+        { listNFT: listNFT },
+        { new: true }
+      );
     
-//       await WalletSchema.findByIdAndUpdate(
-//         nft.seller._id,
-//         {
-//           $pull: {
-//             listNFT: nft._id
-//           }
-//         }
-//       )
-//     }
-//   }
-// })
+      await WalletSchema.findByIdAndUpdate(
+        nft.seller._id,
+        {
+          $pull: {
+            listNFT: nft._id
+          }
+        }
+      )
+    }
+  }
+})
 
 // io.on('connection', (socket) => {
 //   console.log('a user connected');
