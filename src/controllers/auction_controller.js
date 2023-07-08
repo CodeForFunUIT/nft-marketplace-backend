@@ -76,6 +76,7 @@ export const addAuctionOrder = async (req, res) => {
             price: Number(minPrice),
             status: statusNFT.AUCTION,
             auction: data._id,
+            seller: sellerWallet._id,
           },
         }
       ).exec();
@@ -94,7 +95,10 @@ export const addAuctionOrder = async (req, res) => {
         if (sortNFT.length === 0) {
           const nft = await NFT.findOneAndUpdate(
             { auction: auction._id },
-            { price: 0, status: statusNFT.ONSTOCK },
+            { price: 0, 
+              status: statusNFT.ONSTOCK, 
+              seller: mongoose.Types.ObjectId("648fce0ac17d70451ccd6798"),
+            },
             { new: true }
           );
 

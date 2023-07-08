@@ -219,6 +219,7 @@ export const filterNFT = async (req, res) => {
   let catalysts = []
   let tagNFTs = []
   let subTagNFTs = []
+  let status = []
   try {
 
     for(var filter of filters){
@@ -228,7 +229,10 @@ export const filterNFT = async (req, res) => {
         tagNFTs.push(filter)
       }else if(Object.values(subTagsNFT).includes(filter)){
         subTagNFTs.push(filter)
-      }else{
+      }else if(Object.values(statusNFT).includes(filter)){
+        status.push(filter)
+      }
+      else{
         return HttpMethodStatus.badRequest(res, 
           `not exist catalyst ${filter} in catalyst filter: ${Object.values(catalystType)}, in tagsNFT filter: ${Object.values(tagsNFT)},in subTagsNFT filter: ${Object.values(subTagsNFT)} `)
       }
@@ -237,6 +241,7 @@ export const filterNFT = async (req, res) => {
       tagNFT: tagNFTs.length > 0 ? { $in: tagNFTs } : { $exists: true },
       catalyst: catalysts.length > 0 ? { $in: catalysts } : { $exists: true },
       subTagNFT: subTagNFTs.length > 0 ? { $in: subTagNFTs } : { $exists: true },
+      status: status.length > 0 ? { $in: status } : { $exists: true },
     }).populate({path: "seller", select: "_id walletAddress"})
 
     return HttpMethodStatus.ok(res, `filter success with: ${filters}`, nfts)
