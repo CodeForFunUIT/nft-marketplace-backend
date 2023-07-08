@@ -5,7 +5,7 @@ import ethers from "ethers";
 import User from "../models/user.js";
 import NFT from "../models/nft.js";
 import WalletSchema from "../models/wallet.js";
-import { statusNFT, address } from "../utility/enum.js";
+import { statusNFT, address, durationTrick } from "../utility/enum.js";
 import schedule from "node-schedule";
 import { utcToZonedTime } from "date-fns-tz";
 import { vietnamTimezone } from "../utility/vietnam_timezone.js";
@@ -25,14 +25,14 @@ export const addAuctionOrder = async (req, res) => {
     const startDate = utcToZonedTime(new Date(), vietnamTimezone);
     const endDate = utcToZonedTime(new Date(endAuction), vietnamTimezone);
     const now = utcToZonedTime(new Date(), vietnamTimezone);
-    const auctionTime = 2 * 60 * 1000; // 10 phút (tính bằng milliseconds)
+    const auctionTime = endDate.getTime() - now.getTime();
 
-    // if (now.getTime() > endDate.getTime()) {
-    //   return HttpMethodStatus.badRequest(
-    //     res,
-    //     `invalid end date ${endDate} \n now: ${now}`
-    //   );
-    // }
+    if (now.getTime() > endDate.getTime()) {
+      return HttpMethodStatus.badRequest(
+        res,
+        `invalid end date ${endDate} \n now: ${now}`
+      );
+    }
 
     const nft = await NFT.findOne({ tokenId: tokenId });
 
@@ -220,7 +220,7 @@ export const addAuctionOrder = async (req, res) => {
       // });
       return HttpMethodStatus.ok(
         res,
-        `auction success with tokenId: ${nft.tokenId}`,
+        `auction success with tokenId: ${nft.tokenId} with duration: ${auctionTime}`,
         nft
       );
     });
