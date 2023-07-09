@@ -130,8 +130,8 @@ export const addAuctionOrder = async (req, res) => {
               from: process.env.EMAIL_NAME,
               to: userBuy.email,
               subject: "End auction",
-              text: `you have successfully won the auctione NFT item with tokenId ${tokenId}`,
-              html: HTML_TEMPLATE(tokenId),
+              text: `you have successfully won the auction NFT item with tokenId ${tokenId}`,
+              // html: HTML_TEMPLATE(tokenId),
             },
             (info) => {
               console.log("Email sent successfully");
@@ -144,7 +144,7 @@ export const addAuctionOrder = async (req, res) => {
               to: ownerAuction.email,
               subject: "End auction",
               text: `Your auction nft with tokenId: ${tokenId} is end`,
-              html: HTML_TEMPLATE(tokenId),
+              // html: HTML_TEMPLATE(tokenId),
             },
             (info) => {
               console.log("Email sent successfully");
