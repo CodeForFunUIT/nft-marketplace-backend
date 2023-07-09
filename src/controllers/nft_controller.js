@@ -298,6 +298,7 @@ export const uploadImageNFT = async (req, res) => {
       const subTagNFT = fields.subTagNFT
       const catalyst = fields.catalyst
       const name = fields.name
+      const overviewBase64 = fields.overviewBase64
       const path = files.images.filepath;
 
 
@@ -313,6 +314,10 @@ export const uploadImageNFT = async (req, res) => {
         if (err) {
           return HttpMethodStatus.badRequest(res, err.message);
         }
+        let buff = new Buffer.from(overviewBase64, "base64");
+        let rawOverview = buff.toString("ascii");
+    
+        const overview = rawOverview.replace(/[\n\t]/g, "");
         const image = new Image({
           data,
           name,
@@ -320,7 +325,8 @@ export const uploadImageNFT = async (req, res) => {
           subTagNFT,
           catalyst,
           isUse: false,
-          url: "url" /// do not delete
+          url: "url", /// do not delete
+          overview: overview,
         });
         image.save(async (err, resutl) => {
           if (err) return HttpMethodStatus.badRequest(res, `error on save Image ${err.message}`)

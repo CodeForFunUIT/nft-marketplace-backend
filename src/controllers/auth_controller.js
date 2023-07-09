@@ -5,6 +5,7 @@ import crypto from "crypto";
 import { Buffer } from "buffer";
 import { ethers } from "ethers";
 import ethUtil from "ethereumjs-util";
+import WalletSchema from "../models/wallet.js";
 let nonce;
 
 // register user
@@ -131,11 +132,15 @@ export const randomNounce = (req, res) => {
 export const verify = async (req, res) => {
   const data = req.body;
 
-  User.findOne({ walletAddress: data.address }).then((user) => {
-    if (!user) {
+  const userId = req.userId;
+
+  const user = User.findById(userId)
+
+  WalletSchema.findOne({ walletAddress: data.address }).then((wallet) => {
+    if (!wallet) {
       return HttpMethodStatus.badRequest(res, "user not exist");
     }
-    const msg = `Sign message with nonce: ${user.nonce}`;
+    const msg = user.email;
 
     const msgHex = ethUtil.bufferToHex(Buffer.from(msg));
     const msgBuffer = ethUtil.toBuffer(msgHex);
@@ -151,7 +156,7 @@ export const verify = async (req, res) => {
     const addressBuffer = ethUtil.publicToAddress(publicKey);
     const address = ethUtil.bufferToHex(addressBuffer);
 
-    if (address.toLowerCase() === user.walletAddress) {
+    if (address.toLowerCase() === wallet.walletAddress) {
       return HttpMethodStatus.ok(res, "Signature verification success", true);
     } else {
       return HttpMethodStatus.badRequest(res, "Signature verification failed");
