@@ -23,7 +23,9 @@ export const getUserByAddressOwner = async (req, res) => {
   try {
     const { address } = req.body;
 
-    const user = await User.findOne({ walletAddress: address.toLowerCase() });
+    const wallet = await WalletSchema.findOne({walletAddress: address})
+    
+    const user = await User.findById(wallet.owner._id);
 
     if (!user) {
       return HttpMethodStatus.badRequest(res, "user not exist");
