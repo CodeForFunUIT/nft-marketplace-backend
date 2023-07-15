@@ -25,7 +25,8 @@ const nftSchema = new mongoose.Schema({
     },
     auction: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Auction"
+        ref: "Auction",
+        default: null
     },
     uri: {
         type: String,
