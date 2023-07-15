@@ -23,6 +23,7 @@ import { statusNFT, address } from "./utility/enum.js";
 import User from "./models/user.js";
 import WalletSchema from "./models/wallet.js";
 import { wsContractMarketPlace } from "./utility/contract.js";
+import Auction from "./models/auction.js";
 dotenv.config({path: './config/config.env'})
 
 
@@ -142,6 +143,7 @@ wsContractMarketPlace.on(filterMatchOrder, async (orderId,seller,buyer,tokenId,p
   }
   console.log('match');
   console.log(JSON.stringify(transfer,null,4))
+
   const wallet = await WalletSchema.findOne({
     walletAddress: transfer.buyer,
   });
@@ -156,6 +158,7 @@ wsContractMarketPlace.on(filterMatchOrder, async (orderId,seller,buyer,tokenId,p
         walletOwner: wallet.walletAddress.toLowerCase(),
         orderId: 0,
         seller: mongoose.Types.ObjectId("648fce0ac17d70451ccd6798"),
+        auction: null,
       }
     );
 
@@ -177,6 +180,7 @@ wsContractMarketPlace.on(filterMatchOrder, async (orderId,seller,buyer,tokenId,p
           }
         }
       )
+      await Auction.findOneAndDelete({winner: wallet._id} )
     }
   }
 })

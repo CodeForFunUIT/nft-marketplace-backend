@@ -98,6 +98,7 @@ export const addAuctionOrder = async (req, res) => {
             { price: 0, 
               status: statusNFT.ONSTOCK, 
               seller: mongoose.Types.ObjectId("648fce0ac17d70451ccd6798"),
+              auction: null,
             },
             { new: true }
           );
