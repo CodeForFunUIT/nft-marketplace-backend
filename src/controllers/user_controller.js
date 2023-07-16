@@ -423,7 +423,7 @@ export const verify = async (req, res) => {
     { new: true },
   );
   if (user) {
-    return HttpMethodStatus.ok(res, "verify success", user);
+    return res.status(200).send({message: `verify email ${user.email} success`});
   } else {
     return HttpMethodStatus.badRequest(res, "user not found!!");
   }
