@@ -246,7 +246,10 @@ export const getAuction = async (req, res) => {
         `tokenId not exist with: ${tokenId}`
       );
 
-    const auction = await Auction.findById(nft.auction._id);
+    const auction = await Auction.findById(nft.auction._id).populate({
+      path: "winner",
+      select: "_id walletAddress"
+    });
     auction.listAuction.reverse();
     // .populate({
     //   path: "",
