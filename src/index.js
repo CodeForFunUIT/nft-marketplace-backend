@@ -22,7 +22,7 @@ import NFT from "./models/nft.js";
 import { statusNFT, address } from "./utility/enum.js";
 import User from "./models/user.js";
 import WalletSchema from "./models/wallet.js";
-import { wsContractMarketPlace } from "./utility/contract.js";
+import { wsContractMarketPlace, wsContractNFT } from "./utility/contract.js";
 import Auction from "./models/auction.js";
 dotenv.config({path: './config/config.env'})
 
@@ -61,6 +61,7 @@ connectDB();
 const filterAddOrder = wsContractMarketPlace.filters.OrderAdded();
 const filterCancelOrder = wsContractMarketPlace.filters.OrderCancelled();
 const filterMatchOrder = wsContractMarketPlace.filters.OrderMatched();
+const filterMintFromUser = wsContractNFT.filters.Transfer();
 
 /// cancel
 wsContractMarketPlace.on(filterCancelOrder, async (orderId) =>{
@@ -180,9 +181,85 @@ wsContractMarketPlace.on(filterMatchOrder, async (orderId,seller,buyer,tokenId,p
           }
         }
       )
-      await Auction.findOneAndDelete({winner: wallet._id} )
+      // await Auction.findOneAndDelete({winner: wallet._id} )
     }
   }
+})
+
+wsContractMarketPlace.on(filterMintFromUser, async (from, to, tokens) =>{
+  let transfer =  {
+    from: from.toLowerCase(),
+    to: to.toLowerCase(),
+    tokens: Number(tokens._hex),
+  }
+  if(from === "0x0000000000000000000000000000000000000000"){
+    let tokenIds = []
+  
+    const nfts = await NFT.find()
+  
+    nfts.forEach((nft) => {
+      tokenIds.push(nft.tokenId)
+    })
+  
+    const maxTokenId = Math.max.apply(null,tokenIds)
+    const catalyst = openLootBox();
+
+    const randomImage = await Image.aggregate([
+      { $match: { isUse: false, catalyst: catalyst } },
+      { $sample: { size: 1 } }
+    ]);
+
+    if (randomImage.length > 0) {
+
+      const selectedImage = randomImage[0];
+
+      const image = await Image.findById(selectedImage._id)
+
+      const wallet = await WalletSchema.findOne({ walletAddress: transfer.to })
+
+      const currentDate = new Date();
+      const vietnamTimeOffset = 7 * 60 * 60 * 1000; 
+      const vietnamTime = new Date(currentDate.getTime() + vietnamTimeOffset);
+      const nextFreeMint = new Date(currentDate.getTime() + vietnamTimeOffset)
+      nextFreeMint.setDate(currentDate.getDate() + 1); // Thêm một ngày
+      nextFreeMint.setHours(7, 0, 0, 0); // Đặt giờ thành 7:00:00 AM
+      
+      if(image && wallet){
+        await User.findByIdAndUpdate(wallet.owner._id, {
+          lastFreeMint: vietnamTime.toJSON(),
+          nextFreeMint: nextFreeMint.toJSON()
+        })
+  
+        const nft = new NFT({
+          tokenId: maxTokenId + 1,
+          orderId: 0,
+          walletOwner: walletAddress.toLowerCase(),
+          owner: wallet.owner._id,
+          seller: wallet._id,
+          image: image._id,
+          uri: image.url,
+          name: image.name,
+          status: statusNFT.ONSTOCK,
+          tagNFT: image.tagNFT,
+          subTagNFT: image.subTagNFT,
+          catalyst: image.catalyst,
+          overview: image.overview,
+        })
+  
+        nft.save( async (err, data) => {
+          if(err) return HttpMethodStatus.badRequest(res, `error on save nft ${err.message}`)
+          if(data){
+            wallet.listNFT.push(data._id)
+            await wallet.save()
+          }
+        }) 
+      }
+    } 
+  }
+ 
+
+  console.log("mint")
+  console.log(JSON.stringify(transfer,null,4))
 })
 
 // io.on('connection', (socket) => {

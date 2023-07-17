@@ -245,17 +245,24 @@ export const getAuction = async (req, res) => {
         res,
         `tokenId not exist with: ${tokenId}`
       );
+    if(nft.auction != null){
+      const auction = await Auction.findById(nft.auction._id).populate({
+        path: "winner",
+        select: "_id walletAddress"
+      });
+      if(!auction){
+        return HttpMethodStatus.badRequest(res, `auction not exist`)
+      }
+      auction.listAuction.reverse();
+      // .populate({
+      //   path: "",
+      // });
+  
+      return HttpMethodStatus.ok(res, `get auction success`, auction);
+  
+    }
 
-    const auction = await Auction.findById(nft.auction._id).populate({
-      path: "winner",
-      select: "_id walletAddress"
-    });
-    auction.listAuction.reverse();
-    // .populate({
-    //   path: "",
-    // });
-
-    return HttpMethodStatus.ok(res, `get auction success`, auction);
+    return HttpMethodStatus.badRequest(res, `this nft don't have auction`);
   } catch (error) {}
 };
 
