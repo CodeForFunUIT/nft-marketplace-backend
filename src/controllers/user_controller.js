@@ -12,6 +12,7 @@ import HTML_TEMPLATE from "../email/content_email.js";
 import dotenv from "dotenv";
 import Jwt from "jsonwebtoken";
 import WalletSchema from "../models/wallet.js"
+import { generatePassword, generateRandomNumbers } from "../utility/generate_number.js";
 dotenv.config({ path: "../config/config.env" });
 export const getAllUser = async (req, res) => {
   const users = await User.find({}).populate("listNFT");
@@ -490,6 +491,40 @@ export const changePassword = async(req, res ) =>{
     })
   } catch (error) {
     return HttpMethodStatus.badRequest(res, `error on changePassword: ${error.message}`)
+  }
+}
+
+export const forgetPassword = async (req, res) => {
+  try {
+    const { email } = req.body
+
+    const user = await User.findOne({email: email})
+    const newPassword = generatePassword() 
+
+    user.password = newPassword
+    user.save((err, data) => {
+    
+      if(data){
+        SENDMAIL(
+          {
+            from: process.env.EMAIL_NAME,
+            to: user.email,
+            subject: "Forget password",
+            text: `your new password: ${newPassword}`,
+            // html: HTML_TEMPLATE(data.uniqueEmailId),
+          },
+          (info) => {
+            console.log("Email sent successfully");
+            console.log("MESSAGE ID: ", info.messageId);
+            // setTimeout()
+            return HttpMethodStatus.ok(res, `update new password success: ${newPassword}`, data)
+          }
+        );
+    
+      } 
+    })
+  } catch (error) {
+    return HttpMethodStatus.badRequest(res, `error on forget password: ${error.message}`)
   }
 }
 
