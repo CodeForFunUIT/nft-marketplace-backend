@@ -16,87 +16,87 @@ export const mintNFT = async (req, res) => {
   try {
     const { tokenId, walletAddress, isPaid } = req.body
     
-    setTimeout(async () => {
-      const nft = await NFT.findOne({tokenId: tokenId})
+    // setTimeout(async () => {
+    //   const nft = await NFT.findOne({tokenId: tokenId})
 
-      return HttpMethodStatus.ok(res, `mint nft success`, nft)
-    },durationTrick)
+    //   return HttpMethodStatus.ok(res, `mint nft success`, nft)
+    // },durationTrick)
 
-    // const  userId = req.userId
-    // const catalyst = openLootBox();
+    const  userId = req.userId
+    const catalyst = openLootBox();
 
-    // const randomImage = await Image.aggregate([
-    //   { $match: { isUse: false, catalyst: catalyst } },
-    //   { $sample: { size: 1 } }
-    // ]);
+    const randomImage = await Image.aggregate([
+      { $match: { isUse: false, catalyst: catalyst } },
+      { $sample: { size: 1 } }
+    ]);
 
-    // if (randomImage.length > 0) {
+    if (randomImage.length > 0) {
 
-    //   const selectedImage = randomImage[0];
+      const selectedImage = randomImage[0];
 
-    //   /// TODO đang suy nghĩ nên cho lặp ảnh hay không
-    //   ///      nếu có thì set isUse: true
-    //   const image = await Image.findById(selectedImage._id)
+      /// TODO đang suy nghĩ nên cho lặp ảnh hay không
+      ///      nếu có thì set isUse: true
+      const image = await Image.findById(selectedImage._id)
 
-    //   const findNFT = await NFT.findOne({tokenId: tokenId})
-    //   if(findNFT) return HttpMethodStatus.badRequest(res, `this nft is exist with tokenId: ${tokenId}`)
+      const findNFT = await NFT.findOne({tokenId: tokenId})
+      if(findNFT) return HttpMethodStatus.badRequest(res, `this nft is exist with tokenId: ${tokenId}`)
 
-    //   const user = await User.findById(userId)
-    //   if (!user) return HttpMethodStatus.badRequest(res, `not exist user with id: ${userId}`)
+      const user = await User.findById(userId)
+      if (!user) return HttpMethodStatus.badRequest(res, `not exist user with id: ${userId}`)
 
-    //   const wallet = await WalletSchema.findOne({ walletAddress: walletAddress.toLowerCase() })
-    //   if (!wallet) return HttpMethodStatus.badRequest(res, `not exist wallet with address: ${walletAddress}`)
+      const wallet = await WalletSchema.findOne({ walletAddress: walletAddress.toLowerCase() })
+      if (!wallet) return HttpMethodStatus.badRequest(res, `not exist wallet with address: ${walletAddress}`)
 
-    //   if(!isPaid){
-    //     const currentDate = new Date();
-    //     const vietnamTimeOffset = 7 * 60 * 60 * 1000; 
-    //     const vietnamTime = new Date(currentDate.getTime() + vietnamTimeOffset);
-    //     const nextFreeMint = new Date(currentDate.getTime() + vietnamTimeOffset)
-    //     nextFreeMint.setDate(currentDate.getDate() + 1); // Thêm một ngày
-    //     nextFreeMint.setHours(7, 0, 0, 0); // Đặt giờ thành 7:00:00 AM
+      if(!isPaid){
+        const currentDate = new Date();
+        const vietnamTimeOffset = 7 * 60 * 60 * 1000; 
+        const vietnamTime = new Date(currentDate.getTime() + vietnamTimeOffset);
+        const nextFreeMint = new Date(currentDate.getTime() + vietnamTimeOffset)
+        nextFreeMint.setDate(currentDate.getDate() + 1); // Thêm một ngày
+        nextFreeMint.setHours(7, 0, 0, 0); // Đặt giờ thành 7:00:00 AM
         
-    //     await User.findByIdAndUpdate(userId, {
-    //       lastFreeMint: vietnamTime.toJSON(),
-    //       nextFreeMint: nextFreeMint.toJSON()
-    //     })
-    //   }
+        await User.findByIdAndUpdate(userId, {
+          lastFreeMint: vietnamTime.toJSON(),
+          nextFreeMint: nextFreeMint.toJSON()
+        })
+      }
 
-    //   const nft = new NFT({
-    //     tokenId: tokenId,
-    //     orderId: 0,
-    //     walletOwner: walletAddress.toLowerCase(),
-    //     owner: user._id,
-    //     seller: wallet._id,
-    //     image: image._id,
-    //     uri: image.url,
-    //     name: image.name,
-    //     status: statusNFT.ONSTOCK,
-    //     tagNFT: image.tagNFT,
-    //     subTagNFT: image.subTagNFT,
-    //     catalyst: image.catalyst,
-    //     overview: image.overview,
-    //   })
+      const nft = new NFT({
+        tokenId: tokenId,
+        orderId: 0,
+        walletOwner: walletAddress.toLowerCase(),
+        owner: user._id,
+        seller: wallet._id,
+        image: image._id,
+        uri: image.url,
+        name: image.name,
+        status: statusNFT.ONSTOCK,
+        tagNFT: image.tagNFT,
+        subTagNFT: image.subTagNFT,
+        catalyst: image.catalyst,
+        overview: image.overview,
+      })
 
-    //     nft.save( async (err, data) => {
-    //       if(err) return HttpMethodStatus.badRequest(res, `error on save nft ${err.message}`)
-    //       if(data){
-    //         wallet.listNFT.push(data._id)
-    //         await wallet.save()
-    //         const newNFT = await NFT.findById(data._id)
-    //         // .populate({path: 'image' })
-    //         .populate({path: 'seller' , select: "_id walletAddress"})
-    //         .populate({path: 'owner' ,select: "email firstName lastName" })
+        nft.save( async (err, data) => {
+          if(err) return HttpMethodStatus.badRequest(res, `error on save nft ${err.message}`)
+          if(data){
+            wallet.listNFT.push(data._id)
+            await wallet.save()
+            const newNFT = await NFT.findById(data._id)
+            // .populate({path: 'image' })
+            .populate({path: 'seller' , select: "_id walletAddress"})
+            .populate({path: 'owner' ,select: "email firstName lastName" })
 
-    //         // console.log(tmpNFT)
-    //         return HttpMethodStatus.ok(res, 'add nft success', newNFT);
-    //       }
-    //     }) 
+            // console.log(tmpNFT)
+            return HttpMethodStatus.ok(res, 'add nft success', newNFT);
+          }
+        }) 
 
 
       
-    // } else {
-    //   return HttpMethodStatus.badRequest(res, "Empty image")
-    // }
+    } else {
+      return HttpMethodStatus.badRequest(res, "Empty image")
+    }
 
 
   } catch (error) {
