@@ -24,6 +24,8 @@ import User from "./models/user.js";
 import WalletSchema from "./models/wallet.js";
 import { wsContractMarketPlace, wsContractNFT } from "./utility/contract.js";
 import Auction from "./models/auction.js";
+import { openLootBox } from "./utility/open_loot_box.js";
+import Image from "./models/image.js";
 dotenv.config({path: './config/config.env'})
 
 
@@ -247,7 +249,6 @@ wsContractMarketPlace.on(filterMintFromUser, async (from, to, tokens) =>{
         })
   
         nft.save( async (err, data) => {
-          if(err) return HttpMethodStatus.badRequest(res, `error on save nft ${err.message}`)
           if(data){
             wallet.listNFT.push(data._id)
             await wallet.save()
