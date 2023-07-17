@@ -1156,6 +1156,12 @@ export const wsContractMarketPlace = new ethers.Contract(
   wsProvider
 );
 
+export const wsContractNFT = new ethers.Contract(
+    addressNFT,
+    ERC20_ABI_NFT,
+    wsProvider,
+)
+
 
 export const contractMarketPlace = new ethers.Contract(
   addressMarketPlace,
