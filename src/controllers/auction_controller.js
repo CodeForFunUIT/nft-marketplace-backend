@@ -43,7 +43,7 @@ export const addAuctionOrder = async (req, res) => {
       );
 
     if( nft.auction != null){
-      return HttpMethodStatus.badRequest(res, `Auction is exist with tokenId: $tokenId`)
+      return HttpMethodStatus.badRequest(res, `Auction is exist with tokenId: ${tokenId}`)
     }
 
     // if(nft.status == statusNFT.AUCTION){
