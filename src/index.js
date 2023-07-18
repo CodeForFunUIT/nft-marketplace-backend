@@ -74,10 +74,8 @@ wsContractMarketPlace.on(filterCancelOrder, async (orderId) =>{
   console.log("cancel")
   console.log(JSON.stringify(transfer,null,4))
   const nft = await NFT.findOne({orderId: transfer.orderId})
-  console.log(`nft ${nft}`)
   if(nft){
     const walletOwner = await WalletSchema.findById(nft.seller._id)
-    console.log(`walletOwner ${walletOwner}`)
     if(walletOwner){
       nft.price = 0
       nft.status = statusNFT.ONSTOCK
@@ -86,7 +84,6 @@ wsContractMarketPlace.on(filterCancelOrder, async (orderId) =>{
       nft.owner = walletOwner.owner._id
       nft.seller = mongoose.Types.ObjectId("648fce0ac17d70451ccd6798")
       await nft.save()
-      console.log(nft)
       // await NFT.findOneAndUpdate(
       //   { orderId: transfer.orderId },
       //   {
