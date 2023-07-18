@@ -59,7 +59,7 @@ const address = {
 };
 
 const maximumWalletList = 3
-const durationTrick = 2000
+const durationTrick = 3000
 
 export {
   statusNFT,
